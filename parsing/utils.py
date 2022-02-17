@@ -742,7 +742,8 @@ def parse_file(onf_name: str, src_name_for_log: str = '') -> \
         for (token, lingvo, named_ent), cur_bounds in zip(tokens_with_labels,
                                                           bounds_of_tokens):
             #token - word token
-            print("Token: ",token, " named_ent: ", named_ent, " bounds: ",cur_bounds)
+            if named_ent != 'O':
+                print("Token: ",token, " named_ent: ", named_ent, " bounds: ",cur_bounds)
             if len(lingvo) > 1:
                 syntactic_tags |= set(lingvo[:-1])
             if lingvo[-1] not in new_data['morphology']:
