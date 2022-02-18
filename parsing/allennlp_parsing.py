@@ -16,7 +16,7 @@ def allennlp_parsing():
     onto_parser = OntonotesNamedEntityRecognition()
     instances = list(onto_parser._read(cmd_args.source_folder))
     
-    print(instances[0])
+    print(instances[0]["tokens"])
 
 if __name__ == '__main__':
     allennlp_parsing()

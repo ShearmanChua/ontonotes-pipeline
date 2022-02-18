@@ -733,6 +733,8 @@ def parse_file(onf_name: str, src_name_for_log: str = '') -> \
         new_data = {
             'source': file_name_for_log,
             'text': plain_text,
+            'tokens': [],
+            'BIO-tags': [],
             'morphology': dict(),
             'syntax': dict(),
             'entities': dict()
@@ -744,6 +746,8 @@ def parse_file(onf_name: str, src_name_for_log: str = '') -> \
             #token - word token
             if named_ent != 'O':
                 print("Token: ",token, " named_ent: ", named_ent, " bounds: ",cur_bounds)
+            new_data['tokens'].append(token)
+            new_data['BIO-tags'].append(named_ent)
             if len(lingvo) > 1:
                 syntactic_tags |= set(lingvo[:-1])
             if lingvo[-1] not in new_data['morphology']:
@@ -845,7 +849,7 @@ def parse_file(onf_name: str, src_name_for_log: str = '') -> \
                     break
         del plain_text, tokens_with_labels
         for data_key in new_data:
-            if data_key == 'text' or data_key == 'source':
+            if data_key == 'text' or data_key == 'source' or data_key == 'tokens' or data_key == 'BIO-tags':
                 continue
             for lingvo_key in new_data[data_key]:
                 new_bounds = strip_bounds(
@@ -1303,3 +1307,6 @@ def get_entity_frequencies(
     for entity_type in entities_dict:
         entities.append((entity_type, entities_dict[entity_type]))
     return sorted(entities, key=lambda it: (-it[1], it[0]))
+
+def unique_ner_tags(ner_list):
+    return list(set(ner_list))
