@@ -210,6 +210,7 @@ def main():
     # Check predictions before training
     with torch.no_grad():
         precheck_sent = prepare_sequence(training_data[0][0], word_to_ix)
+        # print(precheck_sent)
         precheck_tags = torch.tensor([tag_to_ix[t] for t in training_data[0][1]], dtype=torch.long)
         print(model(precheck_sent))
 
