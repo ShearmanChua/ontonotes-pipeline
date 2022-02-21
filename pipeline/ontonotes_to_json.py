@@ -15,6 +15,8 @@ def ontonotes_to_json():
     task = Task.init(project_name=PROJECT_NAME, task_name=TASK_NAME)
     task.set_base_docker("nvcr.io/nvidia/pytorch:20.08-py3")
 
+    task.execute_remotely(queue_name="compute2", exit_process=True)
+
     # get tar datset uploaded
     tar_dataset_dict = Dataset.list_datasets(
         dataset_project=PROJECT_NAME, partial_name="tar", only_completed=False
@@ -48,8 +50,7 @@ def ontonotes_to_json():
     index_dataset_obj = index_datasets_obj[::-1][0]
 
     index_src_path = index_dataset_obj.get_local_copy()
-
-
+    
 
     parser = ArgumentParser()
     parser.add_argument(
@@ -97,7 +98,6 @@ def ontonotes_to_json():
     cmd_args = parser.parse_args()
 
     task.connect(cmd_args)
-    task.execute_remotely(queue_name="compute2", exit_process=True)
 
     from parsing import ontonotes_parsing_json as jsonParser
 
