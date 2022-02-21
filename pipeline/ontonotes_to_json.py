@@ -13,7 +13,9 @@ def ontonotes_to_json():
 
     Task.add_requirements("-rrequirements.txt")
     task = Task.init(project_name=PROJECT_NAME, task_name=TASK_NAME)
-    task.set_base_docker("nvcr.io/nvidia/pytorch:20.08-py3")
+    # task.set_base_docker("nvcr.io/nvidia/pytorch:20.08-py3")
+    task.set_base_docker("nvidia/cuda:11.4.0-cudnn8-devel-ubuntu20.04")
+   
 
     task.execute_remotely(queue_name="compute2", exit_process=True)
 
