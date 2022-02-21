@@ -87,6 +87,12 @@ def ontonotes_to_json():
     dest='language', type=str, required=False, default='english',
     help='Specific language for generating the .json file, instead of generating for the whole Ontonotes corpus.'
     )
+    parser.add_argument(
+    '-p',
+    '--project',
+    dest='project', type=str, required=False, default=PROJECT_NAME,
+    help='ClearML Project Name'
+    )
 
     cmd_args = parser.parse_args()
 

@@ -8,6 +8,7 @@ import tarfile
 from tempfile import NamedTemporaryFile
 
 from tqdm import tqdm
+from clearml import Task, Dataset
 
 from .utils import parse_file, parse_splitting, check_onf_name
 from .utils import get_language_by_filename
@@ -51,14 +52,55 @@ def ontonotes_parsing_json(parser=None):
             dest='language', type=str, required=False, default='english',
             help='Specific language for generating the .json file, instead of generating for the whole Ontonotes corpus.'
         )
+        parser.add_argument(
+            '-p',
+            '--project',
+            dest='project', type=str, required=False, default=None,
+            help='ClearML Project Name'
+        )
+
     cmd_args = parser.parse_args()
 
     if cmd_args.random_seed is not None:
         random.seed(cmd_args.random_seed)
 
-    with open(cmd_args.source_file, "r") as f:
-        raw_text = f.read()
+    if cmd_args.project is not None:
+        # get tar datset uploaded
+        tar_dataset_dict = Dataset.list_datasets(
+            dataset_project=cmd_args.project, partial_name="tar", only_completed=False
+        )
+
+        tar_datasets_obj = [
+            Dataset.get(dataset_id=dataset_dict["id"]) for dataset_dict in tar_dataset_dict
+        ]
+
+        # reverse list due to child-parent dependency, and get the first dataset_obj
+        tar_dataset_obj = tar_datasets_obj[::-1][0]
         
+        tar_folder = tar_dataset_obj.get_local_copy()
+
+
+        tar_file = tar_dataset_obj.list_files()[0]
+
+
+        tar_src_path = tar_folder + "/" + tar_file
+        cmd_args.source_file = tar_src_path
+
+        # get index datset uploaded
+        index_dataset_dict = Dataset.list_datasets(
+            dataset_project=cmd_args.project, partial_name="index", only_completed=False
+        )
+
+        index_datasets_obj = [
+            Dataset.get(dataset_id=dataset_dict["id"]) for dataset_dict in index_dataset_dict
+        ]
+
+        # reverse list due to child-parent dependency, and get the first dataset_obj
+        index_dataset_obj = index_datasets_obj[::-1][0]
+
+        index_src_path = index_dataset_obj.get_local_copy()
+        cmd_args.dst_file = index_src_path
+
     src_file_name = os.path.normpath(cmd_args.source_file)
     err_msg = 'File "{0}" does not exist!'.format(src_file_name)
     assert os.path.isfile(src_file_name), err_msg
