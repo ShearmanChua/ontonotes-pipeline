@@ -1,19 +1,23 @@
 from argparse import ArgumentParser
 from clearml import Task, Dataset
-from tempfile import gettempdir
-import os
-from os import listdir
-from os.path import isfile, join
 
-from .. parsing import ontonotes_parsing_json as jsonParser
-
-PROJECT_NAME = "ontonotes"
-TASK_NAME = "dataset_parsing_to_json"
 
 def ontonotes_to_json():
 
+    PROJECT_NAME = "ontonotes"
+    TASK_NAME = "dataset_parsing_to_json"
+
     task = Task.init(project_name=PROJECT_NAME, task_name=TASK_NAME)
     task.set_base_docker("nvcr.io/nvidia/pytorch:20.08-py3")
+
+    task.execute_remotely(queue_name="compute2", exit_process=True)
+
+    from tempfile import gettempdir
+    import os
+    from os import listdir
+    from os.path import isfile, join
+
+    from parsing import ontonotes_parsing_json as jsonParser
 
     # get tar datset uploaded
     tar_dataset_dict = Dataset.list_datasets(
@@ -85,7 +89,6 @@ def ontonotes_to_json():
     cmd_args = parser.parse_args()
 
     task.connect(cmd_args)
-    task.execute_remotely(queue_name="compute2", exit_process=True)
 
     jsonParser(parser)
 
