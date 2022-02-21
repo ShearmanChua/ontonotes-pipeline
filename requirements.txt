@@ -94,14 +94,14 @@ jupyter-console==6.4.0
 jupyter-core==4.9.2
 jupyterlab-pygments==0.1.2
 jupyterlab-widgets==1.0.2
-kiwisolver==1.3.2
+kiwisolver
 konoha==4.6.5
 langcodes==3.3.0
 langdetect==1.0.9
 lmdb==1.3.0
 lxml==4.7.1
 MarkupSafe==2.0.1
-matplotlib==3.5.1
+matplotlib
 mistune==0.8.4
 more-itertools==8.8.0
 mpld3==0.3

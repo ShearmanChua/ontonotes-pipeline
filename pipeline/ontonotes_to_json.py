@@ -89,7 +89,7 @@ def ontonotes_to_json():
 
     from parsing import ontonotes_parsing_json as jsonParser
 
-    jsonParser(parser)
+    jsonParser.ontonotes_parsing_json(parser)
 
     files = [f for f in listdir(gettempdir()) if isfile(join(gettempdir(), f))]
 
