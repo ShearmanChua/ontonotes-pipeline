@@ -20,6 +20,8 @@ def ontonotes_to_json():
         dataset_project=PROJECT_NAME, partial_name="tar", only_completed=False
     )
 
+    print( Dataset.get(dataset_id=tar_dataset_dict[0]["id"]))
+
     tar_datasets_obj = [
         Dataset.get(dataset_id=dataset_dict["id"]) for dataset_dict in tar_dataset_dict
     ]
