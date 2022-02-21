@@ -8,6 +8,7 @@ import tarfile
 from tempfile import NamedTemporaryFile
 
 from tqdm import tqdm
+from clearml import Dataset
 
 from .utils import parse_file, parse_splitting, check_onf_name
 from .utils import get_language_by_filename
@@ -56,7 +57,28 @@ def ontonotes_parsing_json(parser=None):
     if cmd_args.random_seed is not None:
         random.seed(cmd_args.random_seed)
 
-    src_file_name = os.path.normpath(cmd_args.source_file)
+    # get tar datset uploaded
+    tar_dataset_dict = Dataset.list_datasets(
+        dataset_project="ontonotes", partial_name="tar", only_completed=False
+    )
+
+    tar_datasets_obj = [
+        Dataset.get(dataset_id=dataset_dict["id"]) for dataset_dict in tar_dataset_dict
+    ]
+
+    # reverse list due to child-parent dependency, and get the first dataset_obj
+    tar_dataset_obj = tar_datasets_obj[::-1][0]
+    
+    tar_folder = tar_dataset_obj.get_local_copy()
+
+
+    tar_file = tar_dataset_obj.list_files()[0]
+
+
+    tar_src_path = tar_folder + "/" + tar_file
+
+    print(os.listdir(cmd_args.source_file))
+    src_file_name = os.path.normpath(tar_src_path)
     err_msg = 'File "{0}" does not exist!'.format(src_file_name)
     assert os.path.isfile(src_file_name), err_msg
 

@@ -1,4 +1,4 @@
-from utils import unique_ner_tags
+from .utils import unique_ner_tags
 import json
 import os
 

@@ -26,8 +26,14 @@ def ontonotes_to_json():
 
     # reverse list due to child-parent dependency, and get the first dataset_obj
     tar_dataset_obj = tar_datasets_obj[::-1][0]
+    
+    tar_folder = tar_dataset_obj.get_local_copy()
 
-    tar_src_path = tar_dataset_obj.list_files()
+
+    tar_file = tar_dataset_obj.list_files()[0]
+
+
+    tar_src_path = tar_folder + "/" + tar_file
 
     # get index datset uploaded
     index_dataset_dict = Dataset.list_datasets(
