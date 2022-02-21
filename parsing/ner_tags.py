@@ -2,7 +2,7 @@ from utils import unique_ner_tags
 import json
 import os
 
-def main():
+def ner_tags_to_json():
     with open('data/train.json') as json_file:
         data = json.load(json_file)
 
@@ -22,4 +22,4 @@ def main():
         json.dump(unique_tags, outfile, indent = 4)
 
 if __name__ == '__main__':
-    main()
+   ner_tags_to_json()

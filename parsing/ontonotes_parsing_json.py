@@ -13,43 +13,44 @@ from utils import parse_file, parse_splitting, check_onf_name
 from utils import get_language_by_filename
 from utils import get_language_frequencies, get_entity_frequencies
 
-def ontonotes_parsing_json():
-    parser = ArgumentParser()
-    parser.add_argument(
-        '-s',
-        '--src',
-        dest='source_file', type=str, required=True,
-        help='The source *.tgz file with gzipped Ontonotes 5 dataset (see '
-             'https://catalog.ldc.upenn.edu/LDC2013T19).'
-    )
-    parser.add_argument(
-        '-d',
-        '--dst',
-        dest='dst_file', type=str, required=True,
-        help='The destination *.json file with texts and their annotations '
-             '(named entities, morphology and syntax).'
-    )
-    parser.add_argument(
-        '-i',
-        '--ids',
-        dest='train_dev_test_ids', type=str, required=False, default=None,
-        help='The directory with identifiers list, which is described the '
-             'Ontonotes 5 splitting by subsets for training, development '
-             '(validation) and final testing (see '
-             'http://conll.cemantix.org/2012/download/ids/).'
-    )
-    parser.add_argument(
-        '-r',
-        '--random',
-        dest='random_seed', type=int, required=False, default=None,
-        help='A random seed.'
-    )
-    parser.add_argument(
-        '-l',
-        '--language',
-        dest='language', type=str, required=False, default=None,
-        help='Specific language for generating the .json file, instead of generating for the whole Ontonotes corpus.'
-    )
+def ontonotes_parsing_json(parser=None):
+    if parser is None:
+        parser = ArgumentParser()
+        parser.add_argument(
+            '-s',
+            '--src',
+            dest='source_file', type=str, required=True,
+            help='The source *.tgz file with gzipped Ontonotes 5 dataset (see '
+                'https://catalog.ldc.upenn.edu/LDC2013T19).'
+        )
+        parser.add_argument(
+            '-d',
+            '--dst',
+            dest='dst_file', type=str, required=True,
+            help='The destination *.json file with texts and their annotations '
+                '(named entities, morphology and syntax).'
+        )
+        parser.add_argument(
+            '-i',
+            '--ids',
+            dest='train_dev_test_ids', type=str, required=False, default=None,
+            help='The directory with identifiers list, which is described the '
+                'Ontonotes 5 splitting by subsets for training, development '
+                '(validation) and final testing (see '
+                'http://conll.cemantix.org/2012/download/ids/).'
+        )
+        parser.add_argument(
+            '-r',
+            '--random',
+            dest='random_seed', type=int, required=False, default=42,
+            help='A random seed.'
+        )
+        parser.add_argument(
+            '-l',
+            '--language',
+            dest='language', type=str, required=False, default='english',
+            help='Specific language for generating the .json file, instead of generating for the whole Ontonotes corpus.'
+        )
     cmd_args = parser.parse_args()
 
     if cmd_args.random_seed is not None:

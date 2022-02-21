@@ -34,13 +34,34 @@ def _get_last_child_dataset(dataset_project, dataset_name):
 
 def main():
 
-    task = Task.init(project_name="ontonotes", task_name="upload raw data")
+    # upload conll-formatted-ontonotes-5.0-12.tar.gz
+    task = Task.init(project_name="ontonotes", task_name="upload tar file")
     dataset = create_dataset(
-        folder_path="data/ontonotes-release-5.0",
+        folder_path="data/conll-formatted-ontonotes-5.0-12.tar.gz",
         dataset_project="ontonotes",
-        dataset_name="ontonotes raw",
+        dataset_name="ontonotes tar",
     )
     dataset.finalize()
+
+    # # raw unzipped ontonotes v5.0 files
+    # task = Task.init(project_name="ontonotes", task_name="upload raw data")
+    # dataset = create_dataset(
+    #     folder_path="data/ontonotes-release-5.0",
+    #     dataset_project="ontonotes",
+    #     dataset_name="ontonotes raw",
+    # )
+    # dataset.finalize()
+
+    # index for train, validation, test split of ontonotes v5.0 data based on conll 2012/2013
+    # task = Task.init(project_name="ontonotes", task_name="upload data index")
+    # dataset = create_dataset(
+    #     folder_path="data/index",
+    #     dataset_project="ontonotes",
+    #     dataset_name="ontonotes index",
+    # )
+    # dataset.finalize()
+
+
 
 if __name__ == '__main__':
     main()
