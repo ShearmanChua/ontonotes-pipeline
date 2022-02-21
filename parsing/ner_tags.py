@@ -1,9 +1,10 @@
 from .utils import unique_ner_tags
 import json
 import os
+from tempfile import NamedTemporaryFile
 
-def ner_tags_to_json():
-    with open('data/train.json') as json_file:
+def ner_tags_to_json(training_file):
+    with open(training_file) as json_file:
         data = json.load(json_file)
 
     training_data = data['TRAINING']
@@ -18,7 +19,7 @@ def ner_tags_to_json():
 
     print("The unique NER tags in corpus are: ")
     print(unique_tags)
-    with open("data/ner_tags.json", "w") as outfile:
+    with open("ner_tags.json", "w") as outfile:
         json.dump(unique_tags, outfile, indent = 4)
 
 if __name__ == '__main__':

@@ -105,8 +105,17 @@ def ontonotes_to_json():
 
     files = [f for f in listdir(gettempdir()) if isfile(join(gettempdir(), f))]
 
+    dataset = Dataset.create(
+            dataset_project=PROJECT_NAME, dataset_name="ontonotes json"
+        )
+
     for file in files:
         task.upload_artifact(name=file, artifact_object=os.path.join(gettempdir(), file))
+        ## register as dataset
+        
+        dataset.add_files(os.path.join(gettempdir(), file))
+        
+    dataset.upload()
 
 if __name__ == '__main__':
     ontonotes_to_json()

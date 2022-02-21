@@ -37,7 +37,7 @@ def main():
     # upload conll-formatted-ontonotes-5.0-12.tar.gz
     task = Task.init(project_name="ontonotes", task_name="upload tar file")
     dataset = create_dataset(
-        folder_path="data/conll-formatted-ontonotes-5.0-12.tar.gz",
+        folder_path="data/ontonotes-release-5.0_LDC2013T19.tgz",
         dataset_project="ontonotes",
         dataset_name="ontonotes tar",
     )
