@@ -6,14 +6,12 @@ import os
 from os import listdir
 from os.path import isfile, join
 
-from parsing import ontonotes_parsing_json as jsonParser
-
-
 def ontonotes_to_json():
 
     PROJECT_NAME = "ontonotes"
     TASK_NAME = "dataset_parsing_to_json"
 
+    Task.add_requirements("-rrequirements.txt")
     task = Task.init(project_name=PROJECT_NAME, task_name=TASK_NAME)
     task.set_base_docker("nvcr.io/nvidia/pytorch:20.08-py3")
 
@@ -88,6 +86,8 @@ def ontonotes_to_json():
 
     task.connect(cmd_args)
     task.execute_remotely(queue_name="compute2", exit_process=True)
+
+    from parsing import ontonotes_parsing_json as jsonParser
 
     jsonParser(parser)
 
