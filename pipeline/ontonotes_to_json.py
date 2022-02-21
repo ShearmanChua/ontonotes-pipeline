@@ -1,6 +1,13 @@
 from argparse import ArgumentParser
 from clearml import Task, Dataset
 
+from tempfile import gettempdir
+import os
+from os import listdir
+from os.path import isfile, join
+
+from parsing import ontonotes_parsing_json as jsonParser
+
 
 def ontonotes_to_json():
 
@@ -9,15 +16,6 @@ def ontonotes_to_json():
 
     task = Task.init(project_name=PROJECT_NAME, task_name=TASK_NAME)
     task.set_base_docker("nvcr.io/nvidia/pytorch:20.08-py3")
-
-    task.execute_remotely(queue_name="compute2", exit_process=True)
-
-    from tempfile import gettempdir
-    import os
-    from os import listdir
-    from os.path import isfile, join
-
-    from parsing import ontonotes_parsing_json as jsonParser
 
     # get tar datset uploaded
     tar_dataset_dict = Dataset.list_datasets(
@@ -45,7 +43,7 @@ def ontonotes_to_json():
     # reverse list due to child-parent dependency, and get the first dataset_obj
     index_dataset_obj = index_datasets_obj[::-1][0]
 
-    index_src_path = index_dataset_obj.list_files()
+    index_src_path = index_dataset_obj.get_local_copy()
 
 
 
@@ -53,14 +51,14 @@ def ontonotes_to_json():
     parser.add_argument(
     '-s',
     '--src',
-    dest='source_file', type=str, required=True,default=tar_src_path,
+    dest='source_file', type=str, required=False,default=tar_src_path,
     help='The source *.tgz file with gzipped Ontonotes 5 dataset (see '
         'https://catalog.ldc.upenn.edu/LDC2013T19).'
     )
     parser.add_argument(
     '-d',
     '--dst',
-    dest='dst_file', type=str, required=True,default=gettempdir(),
+    dest='dst_file', type=str, required=False,default=gettempdir(),
     help='The destination *.json file with texts and their annotations '
         '(named entities, morphology and syntax).'
     )
@@ -89,6 +87,7 @@ def ontonotes_to_json():
     cmd_args = parser.parse_args()
 
     task.connect(cmd_args)
+    task.execute_remotely(queue_name="compute2", exit_process=True)
 
     jsonParser(parser)
 
