@@ -5,6 +5,7 @@ import torch.nn as nn
 import torch.optim as optim
 import json
 from tqdm import tqdm
+from clearml import Task
 
 torch.manual_seed(1)
 
@@ -169,7 +170,7 @@ class BiLSTM_CRF(nn.Module):
         score, tag_seq = self._viterbi_decode(lstm_feats)
         return score, tag_seq
 
-def main():
+def model_train(training_file='data/train.json',tag_file='data/ner_tags.json',logger=None):
     START_TAG = "<START>"
     STOP_TAG = "<STOP>"
     EMBEDDING_DIM = 5
@@ -184,7 +185,7 @@ def main():
     #     "B I O O O O B".split()
     # )]
 
-    with open('data/train.json') as json_file:
+    with open(training_file) as json_file:
         data = json.load(json_file)
 
     data = data['TRAINING']
@@ -197,7 +198,7 @@ def main():
             if word not in word_to_ix:
                 word_to_ix[word] = len(word_to_ix)
 
-    with open('data/ner_tags.json') as json_file:
+    with open(tag_file) as json_file:
         tag_to_ix = json.load(json_file)
 
     tag_to_ix[START_TAG] = tag_to_ix[list(tag_to_ix. keys())[-1]] + 1
@@ -214,6 +215,7 @@ def main():
         precheck_tags = torch.tensor([tag_to_ix[t] for t in training_data[0][1]], dtype=torch.long)
         print(model(precheck_sent))
 
+    count = 0
     # Make sure prepare_sequence from earlier in the LSTM section is loaded
     for epoch in range(
             1):  # again, normally you would NOT do 300 epochs, it is toy data
@@ -235,6 +237,11 @@ def main():
             loss.backward()
             optimizer.step()
 
+            if logger is not None:
+                logger.report_scalar(title='Scalar example {} - epoch'.format(count), 
+                series='Loss', value=loss.item())
+                count += 1
+
     # Check predictions after training
     with torch.no_grad():
         precheck_sent = prepare_sequence(training_data[0][0], word_to_ix)
@@ -242,4 +249,4 @@ def main():
     # We got it!
 
 if __name__ == '__main__':
-    main()
+    model_train()
