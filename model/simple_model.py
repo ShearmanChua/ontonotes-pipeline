@@ -203,6 +203,7 @@ def model_train(training_file='data/train.json',tag_file='data/ner_tags.json',lo
 
     tag_to_ix[START_TAG] = tag_to_ix[list(tag_to_ix. keys())[-1]] + 1
     tag_to_ix[STOP_TAG] = tag_to_ix[list(tag_to_ix. keys())[-1]] + 1
+    print("Model labels: ", tag_to_ix)
     # tag_to_ix = {"B": 0, "I": 1, "O": 2, START_TAG: 3, STOP_TAG: 4}
 
     model = BiLSTM_CRF(len(word_to_ix), tag_to_ix, EMBEDDING_DIM, HIDDEN_DIM)
@@ -238,8 +239,8 @@ def model_train(training_file='data/train.json',tag_file='data/ner_tags.json',lo
             optimizer.step()
 
             if logger is not None:
-                logger.report_scalar(title='Scalar example {} - epoch'.format(count), 
-                series='Loss', value=loss.item())
+                logger.report_scalar(title='Scalar example {} - epoch'.format(epoch), 
+                series='Loss', value=loss.item(),iteration=count)
                 count += 1
 
     # Check predictions after training

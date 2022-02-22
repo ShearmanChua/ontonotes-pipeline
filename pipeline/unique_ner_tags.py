@@ -8,18 +8,20 @@ def retrieve_unique_tags():
 
     PROJECT_NAME = "ontonotes"
     TASK_NAME = "retrieve unique NER tags"
+    JSON_PARTIAL_NAME = "json"
 
     Task.add_requirements("-rrequirements.txt")
     task = Task.init(project_name=PROJECT_NAME, task_name=TASK_NAME)
     task.set_base_docker("nvidia/cuda:11.4.0-cudnn8-devel-ubuntu20.04")
-
-    task.execute_remotely(queue_name="compute2", exit_process=True)
+    args = {'json_dataset':JSON_PARTIAL_NAME}
+    task.connect(args)
+    task.execute_remotely()
 
     from parsing import ner_tags
 
      # get tar datset uploaded
     dataset_dict = Dataset.list_datasets(
-        dataset_project=PROJECT_NAME, partial_name="json", only_completed=False
+        dataset_project=PROJECT_NAME, partial_name=args['json_dataset'], only_completed=False
     )
 
     datasets_obj = [
