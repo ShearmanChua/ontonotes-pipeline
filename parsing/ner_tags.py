@@ -3,7 +3,7 @@ import json
 import os
 from tempfile import NamedTemporaryFile
 
-def ner_tags_to_json(training_file):
+def ner_tags_to_json(training_file,dst_path):
     with open(training_file) as json_file:
         data = json.load(json_file)
 
@@ -19,7 +19,7 @@ def ner_tags_to_json(training_file):
 
     print("The unique NER tags in corpus are: ")
     print(unique_tags)
-    with open("ner_tags.json", "w") as outfile:
+    with open(os.path.join(dst_path, "ner_tags.json"), "w") as outfile:
         json.dump(unique_tags, outfile, indent = 4)
 
 if __name__ == '__main__':

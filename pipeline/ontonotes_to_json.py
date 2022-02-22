@@ -65,7 +65,7 @@ def ontonotes_to_json():
     parser.add_argument(
     '-d',
     '--dst',
-    dest='dst_file', type=str, required=False,default=gettempdir(),
+    dest='dst_file', type=str, required=False,default=gettempdir()+'/ontonotes5.json',
     help='The destination *.json file with texts and their annotations '
         '(named entities, morphology and syntax).'
     )
@@ -105,7 +105,7 @@ def ontonotes_to_json():
 
     jsonParser.ontonotes_parsing_json(parser)
 
-    files = [f for f in listdir(gettempdir()) if isfile(join(gettempdir(), f))]
+    files = [f for f in listdir(gettempdir()) if isfile(join(gettempdir(), f)) and f.endswith('.json')]
 
     dataset = Dataset.create(
             dataset_project=PROJECT_NAME, dataset_name="ontonotes json"
