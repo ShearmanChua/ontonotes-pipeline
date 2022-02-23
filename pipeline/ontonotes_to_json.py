@@ -116,7 +116,7 @@ def ontonotes_to_json():
         )
 
     for file in files:
-        task.upload_artifact(name=file, artifact_object=os.path.join(gettempdir(), file))
+        # task.upload_artifact(name=file, artifact_object=os.path.join(gettempdir(), file))
         ## register as dataset
         
         dataset.add_files(os.path.join(gettempdir(), file))

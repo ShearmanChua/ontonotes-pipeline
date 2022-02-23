@@ -43,8 +43,8 @@ def main():
     # )
     # dataset.finalize()
 
-    # task = Task.init(project_name="ontonotes", task_name="delete dataset")
-    # Dataset.delete(dataset_id='822dda66ba994e8995116a0b079abdf8')
+    task = Task.init(project_name="ontonotes", task_name="delete dataset")
+    Dataset.delete(dataset_id='6b800f989ec24c64a44d1b839f8c44e7')
 
     # raw unzipped ontonotes v5.0 files
     # task = Task.init(project_name="ontonotes", task_name="upload raw data")
@@ -56,13 +56,13 @@ def main():
     # dataset.finalize()
 
     # index for train, validation, test split of ontonotes v5.0 data based on conll 2012/2013
-    task = Task.init(project_name="ontonotes", task_name="upload data index")
-    dataset = create_dataset(
-        folder_path="data/index",
-        dataset_project="ontonotes",
-        dataset_name="ontonotes index",
-    )
-    dataset.finalize()
+    # task = Task.init(project_name="ontonotes", task_name="upload data index")
+    # dataset = create_dataset(
+    #     folder_path="data/index",
+    #     dataset_project="ontonotes",
+    #     dataset_name="ontonotes index",
+    # )
+    # dataset.finalize()
 
 
 

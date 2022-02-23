@@ -44,7 +44,7 @@ def retrieve_unique_tags():
     files = [f for f in listdir(gettempdir()) if isfile(join(gettempdir(), f)) and f.endswith('.json')]
 
     for file in files:
-        task.upload_artifact(name=file, artifact_object=os.path.join(gettempdir(), file))
+        # task.upload_artifact(name=file, artifact_object=os.path.join(gettempdir(), file))
         dataset_obj.add_files(os.path.join(gettempdir(), file))
 
     dataset_obj.upload(output_url='s3://experiment-logging/multimodal')
