@@ -121,7 +121,7 @@ def ontonotes_to_json():
         
         dataset.add_files(os.path.join(gettempdir(), file))
         
-    dataset.upload()
+    dataset.upload(output_url='s3://experiment-logging/multimodal')
 
 if __name__ == '__main__':
     ontonotes_to_json()

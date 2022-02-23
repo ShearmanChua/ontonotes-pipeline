@@ -19,7 +19,7 @@ def create_dataset(folder_path, dataset_project, dataset_name):
         dataset = Dataset.create(dataset_name, dataset_project)
         # dataset.add_files(folder_path)
         dataset.sync_folder(folder_path)
-        dataset.upload()
+        dataset.upload(output_url='s3://experiment-logging/multimodal')
         # dataset.finalize()
         return dataset
 
@@ -34,19 +34,19 @@ def _get_last_child_dataset(dataset_project, dataset_name):
 
 def main():
 
-    # upload conll-formatted-ontonotes-5.0-12.tar.gz
-    task = Task.init(project_name="ontonotes", task_name="upload tar file")
-    dataset = create_dataset(
-        folder_path="data/ontonotes-release-5.0_LDC2013T19.tgz",
-        dataset_project="ontonotes",
-        dataset_name="ontonotes tar",
-    )
-    dataset.finalize()
+    # # upload conll-formatted-ontonotes-5.0-12.tar.gz
+    # task = Task.init(project_name="ontonotes", task_name="upload tar file")
+    # dataset = create_dataset(
+    #     folder_path="data/ontonotes-release-5.0_LDC2013T19.tgz",
+    #     dataset_project="ontonotes",
+    #     dataset_name="ontonotes tar",
+    # )
+    # dataset.finalize()
 
     # task = Task.init(project_name="ontonotes", task_name="delete dataset")
-    # Dataset.delete(dataset_id='0c8cd9bd00a94b7ca48f96fcfbf8d59e')
+    # Dataset.delete(dataset_id='822dda66ba994e8995116a0b079abdf8')
 
-    # # raw unzipped ontonotes v5.0 files
+    # raw unzipped ontonotes v5.0 files
     # task = Task.init(project_name="ontonotes", task_name="upload raw data")
     # dataset = create_dataset(
     #     folder_path="data/ontonotes-release-5.0",
@@ -56,13 +56,13 @@ def main():
     # dataset.finalize()
 
     # index for train, validation, test split of ontonotes v5.0 data based on conll 2012/2013
-    # task = Task.init(project_name="ontonotes", task_name="upload data index")
-    # dataset = create_dataset(
-    #     folder_path="data/index",
-    #     dataset_project="ontonotes",
-    #     dataset_name="ontonotes index",
-    # )
-    # dataset.finalize()
+    task = Task.init(project_name="ontonotes", task_name="upload data index")
+    dataset = create_dataset(
+        folder_path="data/index",
+        dataset_project="ontonotes",
+        dataset_name="ontonotes index",
+    )
+    dataset.finalize()
 
 
 

@@ -159,6 +159,7 @@ class BiLSTM_CRF(nn.Module):
     def neg_log_likelihood(self, sentence, tags):
         feats = self._get_lstm_features(sentence)
         forward_score = self._forward_alg(feats)
+        viterbi_score, tag_seq = self._viterbi_decode(feats)
         gold_score = self._score_sentence(feats, tags)
         return forward_score - gold_score
 
@@ -219,7 +220,7 @@ def model_train(training_file='data/train.json',tag_file='data/ner_tags.json',lo
     count = 0
     # Make sure prepare_sequence from earlier in the LSTM section is loaded
     for epoch in range(
-            1):  # again, normally you would NOT do 300 epochs, it is toy data
+            100):  # again, normally you would NOT do 300 epochs, it is toy data
         for sentence, tags in tqdm(training_data):
             # Step 1. Remember that Pytorch accumulates gradients.
             # We need to clear them out before each instance
@@ -243,11 +244,11 @@ def model_train(training_file='data/train.json',tag_file='data/ner_tags.json',lo
                 series='Loss', value=loss.item(),iteration=count)
                 count += 1
 
-    # Check predictions after training
-    with torch.no_grad():
-        precheck_sent = prepare_sequence(training_data[0][0], word_to_ix)
-        print(model(precheck_sent))
-    # We got it!
+        # Check predictions after training
+        with torch.no_grad():
+            precheck_sent = prepare_sequence(training_data[0][0], word_to_ix)
+            print(model(precheck_sent))
+        # We got it!
 
 if __name__ == '__main__':
     model_train()
