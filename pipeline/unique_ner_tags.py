@@ -47,7 +47,7 @@ def retrieve_unique_tags():
         task.upload_artifact(name=file, artifact_object=os.path.join(gettempdir(), file))
         dataset_obj.add_files(os.path.join(gettempdir(), file))
 
-    dataset_obj.upload()
+    dataset_obj.upload(output_url='s3://experiment-logging/multimodal')
     
 
 if __name__ == '__main__':
