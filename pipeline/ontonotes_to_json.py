@@ -115,7 +115,7 @@ def ontonotes_to_json():
     files = [f for f in listdir(gettempdir()) if isfile(join(gettempdir(), f)) and f.endswith('.json')]
 
     dataset = Dataset.create(
-            dataset_project=args['project'], dataset_name="ontonotes json"
+            dataset_project=args['project'], dataset_name="ontonotes training"
         )
 
     for file in files:
@@ -134,6 +134,7 @@ def ontonotes_to_json():
         df = pd.read_json(StringIO(json_object), orient ='index')
         df.to_parquet(os.path.join(gettempdir(), parquet_file),engine='fastparquet')
 
+        dataset.add_files(os.path.join(gettempdir(), file))
         dataset.add_files(os.path.join(gettempdir(), parquet_file))
         
     dataset.upload(output_url='s3://experiment-logging/multimodal')

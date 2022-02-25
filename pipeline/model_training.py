@@ -8,13 +8,13 @@ def model_training():
 
     PROJECT_NAME = "ontonotes"
     TASK_NAME = "model_training"
-    JSON_PARTIAL_NAME = "json"
+    JSON_PARTIAL_NAME = "training"
 
     Task.add_requirements("-rrequirements.txt")
     task = Task.init(project_name=PROJECT_NAME, task_name=TASK_NAME)
     # task.set_base_docker("nvcr.io/nvidia/pytorch:20.08-py3")
     task.set_base_docker("nvidia/cuda:11.4.0-cudnn8-devel-ubuntu20.04")
-    args = {'json_dataset':JSON_PARTIAL_NAME}
+    args = {'training_dataset':JSON_PARTIAL_NAME}
     task.connect(args)
     task.execute_remotely()
 
@@ -24,7 +24,7 @@ def model_training():
 
      # get tar datset uploaded
     dataset_dict = Dataset.list_datasets(
-        dataset_project=PROJECT_NAME, partial_name=args["json_dataset"], only_completed=False
+        dataset_project=PROJECT_NAME, partial_name=args["training_dataset"], only_completed=False
     )
 
     datasets_obj = [
@@ -36,7 +36,7 @@ def model_training():
     
     json_folder = dataset_obj.get_local_copy()
 
-    train_file = [file for file in dataset_obj.list_files() if file=='train.json'][0]
+    train_file = [file for file in dataset_obj.list_files() if file=='train.parquet'][0]
 
     training_file_path = json_folder + "/" + train_file
     
