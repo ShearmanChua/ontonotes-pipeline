@@ -11,7 +11,7 @@ pipe = PipelineController(
     add_pipeline_tags=True,
 )
 
-pipe.set_default_execution_queue("compute2")  # set to queue with GPU
+pipe.set_default_execution_queue("compute")  # set to queue with GPU
 
 pipe.add_step(
     name="dataset_parsing_to_json",
@@ -25,7 +25,7 @@ pipe.add_step(
     base_task_project=TASK_PROJECT_NAME,
     base_task_name="retrieve unique NER tags",
     parameter_override={
-        "General/json_dataset": "ontonotes training"
+        "General/training_dataset": "ontonotes training"
     },
 )
 pipe.add_step(
@@ -34,7 +34,7 @@ pipe.add_step(
     base_task_project=TASK_PROJECT_NAME,
     base_task_name="model_training",
     parameter_override={
-        "General/json_dataset": "ontonotes training"
+        "General/training_dataset": "ontonotes training"
     },
 )
 
