@@ -44,7 +44,11 @@ def model_training():
 
     tags_file_path = json_folder + "/" + tags_file
 
-    simple_model.model_train(training_file_path,tags_file_path,logger)
+    word_to_ix_file = [file for file in dataset_obj.list_files() if file=='word_to_ix.json'][0]
+
+    word_to_ix_file_path = json_folder + "/" + word_to_ix_file
+
+    simple_model.model_train(training_file_path,tags_file_path,word_to_ix_file_path,logger)
 
 
 if __name__ == '__main__':

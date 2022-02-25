@@ -3,6 +3,9 @@ import torch
 import torch.autograd as autograd
 import torch.nn as nn
 import torch.optim as optim
+from torch.utils.data import Dataset, DataLoader
+import dask.dataframe as dd
+import dask
 import json
 from tqdm import tqdm
 from clearml import Task
@@ -171,7 +174,7 @@ class BiLSTM_CRF(nn.Module):
         score, tag_seq = self._viterbi_decode(lstm_feats)
         return score, tag_seq
 
-def model_train(training_file='data/train.json',tag_file='data/ner_tags.json',logger=None):
+def model_train(training_file='data/train.json',tag_file='data/ner_tags.json',word_to_ix_flie='data/word_to_ix.json',logger=None):
     START_TAG = "<START>"
     STOP_TAG = "<STOP>"
     EMBEDDING_DIM = 5
@@ -185,19 +188,25 @@ def model_train(training_file='data/train.json',tag_file='data/ner_tags.json',lo
     #     "georgia tech is a university in georgia".split(),
     #     "B I O O O O B".split()
     # )]
+    
+    class TrainDataset(Dataset):
+        def __init__(self, training_file):
+            self.path = training_file
+            self.data = dd.read_parquet(training_file,engine='fastparquet')
+        def __len__(self):
+            return len(self.data)
+        def __getitem__(self, idx):
+            data_transformed = self.data.loc[idx].compute()
+            data_transformed = data_transformed.to_dict('records')
+            record = data_transformed[0]
+            sample = (record['tokens'],record['BIO-tags'])
+            return sample
 
-    with open(training_file) as json_file:
-        data = json.load(json_file)
+    train_dataset = TrainDataset(training_file)
+    train_loader = DataLoader(train_dataset, batch_size=1)
 
-    data = data['TRAINING']
-    training_data = [(doc["tokens"],doc["BIO-tags"]) for doc in data]
-    training_data = training_data[:10000]
-
-    word_to_ix = {}
-    for sentence, tags in training_data:
-        for word in sentence:
-            if word not in word_to_ix:
-                word_to_ix[word] = len(word_to_ix)
+    with open(word_to_ix_flie) as json_file:
+        word_to_ix = json.load(json_file)
 
     with open(tag_file) as json_file:
         tag_to_ix = json.load(json_file)
@@ -211,17 +220,20 @@ def model_train(training_file='data/train.json',tag_file='data/ner_tags.json',lo
     optimizer = optim.SGD(model.parameters(), lr=0.01, weight_decay=1e-4)
 
     # Check predictions before training
+    sentence, tags = next(iter(train_loader))
     with torch.no_grad():
-        precheck_sent = prepare_sequence(training_data[0][0], word_to_ix)
+        precheck_sent = prepare_sequence(sentence, word_to_ix)
         # print(precheck_sent)
-        precheck_tags = torch.tensor([tag_to_ix[t] for t in training_data[0][1]], dtype=torch.long)
+        precheck_tags = torch.tensor([tag_to_ix[t] for t in tags], dtype=torch.long)
         print(model(precheck_sent))
 
     count = 0
     # Make sure prepare_sequence from earlier in the LSTM section is loaded
     for epoch in range(
             100):  # again, normally you would NOT do 300 epochs, it is toy data
-        for sentence, tags in tqdm(training_data):
+        pbar = tqdm(len(train_loader.dataset), position=0, leave=True)
+        for batch in train_loader:
+            sentence,tags = batch
             # Step 1. Remember that Pytorch accumulates gradients.
             # We need to clear them out before each instance
             model.zero_grad()
@@ -243,10 +255,14 @@ def model_train(training_file='data/train.json',tag_file='data/ner_tags.json',lo
                 logger.report_scalar(title='Scalar example {} - epoch'.format(epoch), 
                 series='Loss', value=loss.item(),iteration=count)
                 count += 1
+            pbar.update(1)
 
         # Check predictions after training
+        sentence, tags = next(iter(train_loader))
         with torch.no_grad():
-            precheck_sent = prepare_sequence(training_data[0][0], word_to_ix)
+            precheck_sent = prepare_sequence(sentence, word_to_ix)
+            # print(precheck_sent)
+            precheck_tags = torch.tensor([tag_to_ix[t] for t in tags], dtype=torch.long)
             print(model(precheck_sent))
         # We got it!
 
