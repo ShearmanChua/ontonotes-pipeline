@@ -8,6 +8,7 @@ from os.path import isfile, join
 import json 
 import pandas as pd
 from io import StringIO
+import codecs
 
 def ontonotes_to_json():
 
@@ -124,11 +125,25 @@ def ontonotes_to_json():
         parquet_file = file.strip('.json')
         with open(os.path.join(gettempdir(), file)) as json_file:
             data = json.load(json_file)
+        
         key,docs = data.items()
         training_records = {}
 
         for i in range(0,len(docs)):
             training_records[str(i)] = docs[i]
+
+        if file == args['dst_file'].strip('/'):
+            training_data = [(doc["tokens"],doc["BIO-tags"]) for doc in docs]
+            word_to_ix = {}
+            for sentence, tags in training_data:
+                for word in sentence:
+                    if word not in word_to_ix:
+                        word_to_ix[word] = len(word_to_ix)
+            
+            with codecs.open(os.path.join(gettempdir(), 'word_to_ix.json'), mode='w', encoding='utf-8',
+                     errors='ignore') as fp:
+                json.dumps(word_to_ix, fp=fp, ensure_ascii=False, indent = 4)
+            dataset.add_files(os.path.join(gettempdir(), 'word_to_ix.json'))
 
         json_object = json.dumps(training_records, indent = 4)
         df = pd.read_json(StringIO(json_object), orient ='index')
@@ -136,6 +151,7 @@ def ontonotes_to_json():
 
         dataset.add_files(os.path.join(gettempdir(), file))
         dataset.add_files(os.path.join(gettempdir(), parquet_file))
+
         
     dataset.upload(output_url='s3://experiment-logging/multimodal')
 
