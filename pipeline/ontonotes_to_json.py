@@ -5,6 +5,9 @@ from tempfile import gettempdir
 import os
 from os import listdir
 from os.path import isfile, join
+import json 
+import pandas as pd
+from io import StringIO
 
 def ontonotes_to_json():
 
@@ -118,8 +121,20 @@ def ontonotes_to_json():
     for file in files:
         # task.upload_artifact(name=file, artifact_object=os.path.join(gettempdir(), file))
         ## register as dataset
-        
-        dataset.add_files(os.path.join(gettempdir(), file))
+        parquet_file = file.strip('.json')
+        with open(os.path.join(gettempdir(), file)) as json_file:
+            data = json.load(json_file)
+        key,docs = data.items()
+        training_records = {}
+
+        for i in range(0,len(docs)):
+            training_records[str(i)] = docs[i]
+
+        json_object = json.dumps(training_records, indent = 4)
+        df = pd.read_json(StringIO(json_object), orient ='index')
+        df.to_parquet(os.path.join(gettempdir(), parquet_file),engine='fastparquet')
+
+        dataset.add_files(os.path.join(gettempdir(), parquet_file))
         
     dataset.upload(output_url='s3://experiment-logging/multimodal')
 
