@@ -25,7 +25,7 @@ pipe.add_step(
     base_task_project=TASK_PROJECT_NAME,
     base_task_name="retrieve unique NER tags",
     parameter_override={
-        "General/json_dataset": "ontonotes json"
+        "General/json_dataset": "ontonotes training"
     },
 )
 pipe.add_step(
@@ -34,7 +34,7 @@ pipe.add_step(
     base_task_project=TASK_PROJECT_NAME,
     base_task_name="model_training",
     parameter_override={
-        "General/json_dataset": "ontonotes json"
+        "General/json_dataset": "ontonotes training"
     },
 )
 
