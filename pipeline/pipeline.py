@@ -11,7 +11,7 @@ pipe = PipelineController(
     add_pipeline_tags=True,
 )
 
-pipe.set_default_execution_queue("compute")  # set to queue with GPU
+pipe.set_default_execution_queue("compute2")  # set to queue with GPU
 
 pipe.add_step(
     name="dataset_parsing_to_json",
