@@ -17,7 +17,6 @@ bleach==4.1.0
 blis==0.7.6
 boto3==1.21.1
 botocore==1.24.1
-bpemb==0.3.3
 Brlapi==0.6.6
 cached-property==1.5.2
 cachetools==4.2.4
