@@ -25,7 +25,7 @@ def ontonotes_to_json():
     task.set_base_docker("nvidia/cuda:11.4.0-cudnn8-devel-ubuntu20.04")
     args = {"dst_file":DESTINATION_FILE_NAME,"language":LANGUAGE,"project":PROJECT_NAME,"source_tar":TAR_PARTIAL_NAME,"index":INDEX_PARTIAL_NAME}
     task.connect(args)
-    task.execute_remotely()
+    task.execute_remotely(queue_name='compute2')
 
     # get tar datset uploaded
     tar_dataset_dict = Dataset.list_datasets(
