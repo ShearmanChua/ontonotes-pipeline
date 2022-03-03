@@ -146,7 +146,7 @@ def ontonotes_to_parquet():
             
             with codecs.open(os.path.join(gettempdir(), 'word_to_ix.json'), mode='w', encoding='utf-8',
                      errors='ignore') as fp:
-                json.dumps(word_to_ix, fp=fp, ensure_ascii=False, indent = 4)
+                json.dump(word_to_ix, fp=fp, ensure_ascii=False, indent = 4)
             dataset.add_files(os.path.join(gettempdir(), 'word_to_ix.json'))
 
         json_object = json.dumps(training_records, indent = 4)
