@@ -230,7 +230,7 @@ def model_train(training_file='data/train.json',tag_file='data/ner_tags.json',wo
     count = 0
     # Make sure prepare_sequence from earlier in the LSTM section is loaded
     for epoch in range(
-            100):  # again, normally you would NOT do 300 epochs, it is toy data
+            1):  # again, normally you would NOT do 300 epochs, it is toy data
         pbar = tqdm(len(train_loader.dataset), position=0, leave=True)
         for batch in train_loader:
             sentence,tags = batch
