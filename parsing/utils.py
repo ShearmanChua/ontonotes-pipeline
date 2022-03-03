@@ -891,7 +891,6 @@ def parse_file(onf_name: str, src_name_for_log: str = '') -> \
                     sorted(new_bounds)
                 )
         # new_data['source'] = file_name_for_log
-        print(new_data)
         all_data.append(new_data)
         if all_lines[end_idx] == final_separator:
             start_idx = -1
