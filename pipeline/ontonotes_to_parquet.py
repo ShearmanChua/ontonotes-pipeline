@@ -10,10 +10,10 @@ import pandas as pd
 from io import StringIO
 import codecs
 
-def ontonotes_to_json():
+def ontonotes_to_parquet():
 
     PROJECT_NAME = "ontonotes"
-    TASK_NAME = "dataset_parsing_to_json"
+    TASK_NAME = "dataset_parsing_to_parquet"
     TAR_PARTIAL_NAME = "tar"
     INDEX_PARTIAL_NAME = "index"
     DESTINATION_FILE_NAME = '/ontonotes5.json'
@@ -128,7 +128,9 @@ def ontonotes_to_json():
         with open(os.path.join(gettempdir(), file)) as json_file:
             data = json.load(json_file)
         
-        key,docs = data.items()
+        docs = None
+        for key,docs in data.items():
+            docs = docs
         training_records = {}
 
         for i in range(0,len(docs)):
@@ -158,5 +160,5 @@ def ontonotes_to_json():
     dataset.upload(output_url='s3://experiment-logging/multimodal')
 
 if __name__ == '__main__':
-    ontonotes_to_json()
+    ontonotes_to_parquet()
 

@@ -1,3 +1,3 @@
-from pipeline import ontonotes_to_json as parser
+from pipeline import ontonotes_to_parquet as parser
 
-parser.ontonotes_to_json()
+parser.ontonotes_to_parquet()
