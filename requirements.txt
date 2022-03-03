@@ -225,7 +225,7 @@ threadpoolctl==3.1.0
 tokenizers==0.10.3
 tomli==1.2.3
 toolz==0.11.2
-torch
+torch==1.9.1
 torchvision==0.10.1
 tornado==6.1
 tqdm==4.62.3
@@ -245,10 +245,8 @@ Wikipedia-API==0.5.4
 word2number==1.1
 wordcloud==1.8.1
 wrapt==1.13.3
-xkit==0.0.0
 xxhash==2.0.2
 yarl==1.7.2
 yaspin==2.1.0
 zc.lockfile==2.0
 zipp==3.6.0
-zope.interface==4.3.2
