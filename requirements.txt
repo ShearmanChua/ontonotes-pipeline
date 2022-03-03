@@ -48,7 +48,7 @@ entrypoints==0.4
 fairscale
 fastparquet==0.8.0
 feedparser==6.0.8
-filelock==3.0.12
+filelock
 flair==0.10
 fonttools==4.29.1
 frozenlist==1.2.0
