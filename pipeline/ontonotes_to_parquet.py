@@ -9,6 +9,7 @@ import json
 import pandas as pd
 from io import StringIO
 import codecs
+import re
 
 def ontonotes_to_parquet():
 
@@ -124,7 +125,7 @@ def ontonotes_to_parquet():
     for file in files:
         # task.upload_artifact(name=file, artifact_object=os.path.join(gettempdir(), file))
         ## register as dataset
-        parquet_file = file.strip('.json')
+        parquet_file = re.sub('.json','.parquet',file)
         with open(os.path.join(gettempdir(), file)) as json_file:
             data = json.load(json_file)
         
@@ -151,6 +152,7 @@ def ontonotes_to_parquet():
 
         json_object = json.dumps(training_records, indent = 4)
         df = pd.read_json(StringIO(json_object), orient ='index')
+        print(df.head())
         df.to_parquet(os.path.join(gettempdir(), parquet_file),engine='fastparquet')
 
         dataset.add_files(os.path.join(gettempdir(), file))
