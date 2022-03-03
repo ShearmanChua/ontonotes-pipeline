@@ -24,6 +24,7 @@ certifi==2021.10.8
 cffi==1.15.0
 chardet==4.0.0
 charset-normalizer==2.0.12
+checklist==0.0.11
 cheroot==8.6.0
 CherryPy==18.6.1
 clearml==1.1.6
