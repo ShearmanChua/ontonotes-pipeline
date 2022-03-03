@@ -43,6 +43,6 @@ def mask_to_distance(mask, mask_len, decay=.1):
     return dist
 
 class FetDataset(Dataset):
-    def __init__(self, gpu=False):
+    def __init__(self, training_file_path,gpu=False):
         self.gpu = gpu
-        self.data = dd.read_parquet(training_file,engine='fastparquet')
+        self.data = dd.read_parquet(training_file_path,engine='fastparquet')

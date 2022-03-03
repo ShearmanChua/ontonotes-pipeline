@@ -214,8 +214,6 @@ spacy-legacy==3.0.8
 spacy-loggers==1.0.1
 sqlitedict==1.7.0
 srsly==2.4.2
-system-service==0.3
-systemd-python==234
 tabulate==0.8.9
 tempora==4.1.2
 tensorboardX==2.4.1
