@@ -46,3 +46,12 @@ class FetDataset(Dataset):
     def __init__(self, training_file_path,gpu=False):
         self.gpu = gpu
         self.data = dd.read_parquet(training_file_path,engine='fastparquet')
+    def __getitem__(self, idx):
+        data_transformed = self.data.loc[idx].compute()
+        data_transformed = data_transformed.to_dict('records')
+        record = data_transformed[0]
+        sample = (record['tokens'],record['BIO-tags'])
+        return sample
+
+    def __len__(self):
+        return len(self.data)

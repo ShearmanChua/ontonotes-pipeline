@@ -19,14 +19,15 @@ def ontonotes_to_json():
     DESTINATION_FILE_NAME = '/ontonotes5.json'
     LANGUAGE = 'english'
 
-    Task.add_requirements("-rrequirements.txt")
-    # Task.force_requirements_env_freeze(force=True, requirements_file='requirements.txt')
+    # Task.add_requirements("-rrequirements.txt")
+    Task.force_requirements_env_freeze(force=True, requirements_file='requirements.txt')
+    Task.add_requirements("torch")
     task = Task.init(project_name=PROJECT_NAME, task_name=TASK_NAME)
     # task.set_base_docker("nvcr.io/nvidia/pytorch:20.08-py3")
     task.set_base_docker("nvidia/cuda:11.4.0-cudnn8-devel-ubuntu20.04")
     args = {"dst_file":DESTINATION_FILE_NAME,"language":LANGUAGE,"project":PROJECT_NAME,"source_tar":TAR_PARTIAL_NAME,"index":INDEX_PARTIAL_NAME}
     task.connect(args)
-    task.execute_remotely(queue_name='compute2')
+    task.execute_remotely(queue_name='compute')
 
     # get tar datset uploaded
     tar_dataset_dict = Dataset.list_datasets(

@@ -10,7 +10,8 @@ def retrieve_unique_tags():
     TASK_NAME = "retrieve unique NER tags"
     JSON_PARTIAL_NAME = "training"
 
-    Task.add_requirements("-rrequirements.txt")
+    Task.force_requirements_env_freeze(force=True, requirements_file='requirements.txt')
+    Task.add_requirements("torch")
     task = Task.init(project_name=PROJECT_NAME, task_name=TASK_NAME)
     task.set_base_docker("nvidia/cuda:11.4.0-cudnn8-devel-ubuntu20.04")
     args = {'training_dataset':JSON_PARTIAL_NAME}
