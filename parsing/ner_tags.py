@@ -3,7 +3,7 @@ import json
 import os
 from tempfile import NamedTemporaryFile
 
-def ner_tags_to_json(training_file,dst_path):
+def ner_tags_to_json(training_file,dst_path,tags_field):
     with open(training_file) as json_file:
         data = json.load(json_file)
 
@@ -11,7 +11,7 @@ def ner_tags_to_json(training_file,dst_path):
     unique_tags = {}
     all_tags = []
     for doc in training_data:
-        tags = unique_ner_tags(doc['BIO-tags'])
+        tags = unique_ner_tags(doc[tags_field])
         all_tags.extend(tags)
     all_tags = unique_ner_tags(all_tags)
     for i in range(0,len(all_tags)):

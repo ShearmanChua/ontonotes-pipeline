@@ -8,11 +8,14 @@ import tarfile
 from tempfile import NamedTemporaryFile
 
 from tqdm import tqdm
-from clearml import Task, Dataset
 
 from .utils import parse_file, parse_splitting, check_onf_name
 from .utils import get_language_by_filename
 from .utils import get_language_frequencies, get_entity_frequencies
+
+# from utils import parse_file, parse_splitting, check_onf_name
+# from utils import get_language_by_filename
+# from utils import get_language_frequencies, get_entity_frequencies
 
 def ontonotes_parsing_json(parser=None):
     if parser is None:

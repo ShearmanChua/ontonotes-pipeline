@@ -9,12 +9,13 @@ def retrieve_unique_tags():
     PROJECT_NAME = "ontonotes"
     TASK_NAME = "retrieve unique NER tags"
     JSON_PARTIAL_NAME = "training"
+    TAGS_FIELD = 'BIO-tags'
 
     Task.force_requirements_env_freeze(force=True, requirements_file='requirements.txt')
     Task.add_requirements("torch")
     task = Task.init(project_name=PROJECT_NAME, task_name=TASK_NAME)
     task.set_base_docker("nvidia/cuda:11.4.0-cudnn8-devel-ubuntu20.04")
-    args = {'training_dataset':JSON_PARTIAL_NAME}
+    args = {'training_dataset':JSON_PARTIAL_NAME,'tags_field':TAGS_FIELD}
     task.connect(args)
     task.execute_remotely()
 
@@ -40,7 +41,7 @@ def retrieve_unique_tags():
 
     dst_path = gettempdir()
 
-    ner_tags.ner_tags_to_json(file_path,dst_path)
+    ner_tags.ner_tags_to_json(file_path,dst_path,args['tags_field'])
 
     files = [f for f in listdir(gettempdir()) if isfile(join(gettempdir(), f)) and f.endswith('.json')]
 

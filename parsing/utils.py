@@ -735,12 +735,15 @@ def parse_file(onf_name: str, src_name_for_log: str = '') -> \
             'text': plain_text,
             'tokens': [],
             'BIO-tags': [],
+            'fine_grained_entities': [],
             'morphology': dict(),
             'syntax': dict(),
             'entities': dict()
         }
         previous_entity = 'O'
         entity_start = -1
+        fine_grain_entity_start = -1
+        mention_count = 0
         for (token, lingvo, named_ent), cur_bounds in zip(tokens_with_labels,
                                                           bounds_of_tokens):
             #token - word token
@@ -759,6 +762,15 @@ def parse_file(onf_name: str, src_name_for_log: str = '') -> \
                         new_data['entities'][previous_entity] = []
                     new_data['entities'][previous_entity].append(
                         (entity_start, cur_bounds[0]))
+                    new_fine_grain_entity = dict()
+                    new_fine_grain_entity['labels']=[previous_entity]
+                    new_fine_grain_entity['start']= fine_grain_entity_start
+                    new_fine_grain_entity['end']= len(new_data['tokens']) - 1
+                    new_fine_grain_entity['mention']= " ".join(new_data['tokens'][fine_grain_entity_start:-1])
+                    new_fine_grain_entity['mention_id']= file_name_for_log + '-' + str(mention_count)
+                    new_data['fine_grained_entities'].append(new_fine_grain_entity)
+                    fine_grain_entity_start=-1
+                    mention_count += 1
                     entity_start = -1
                     previous_entity = 'O'
             else:
@@ -768,8 +780,19 @@ def parse_file(onf_name: str, src_name_for_log: str = '') -> \
                             new_data['entities'][previous_entity] = []
                         new_data['entities'][previous_entity].append(
                             (entity_start, cur_bounds[0]))
+                        new_fine_grain_entity = dict()
+                        new_fine_grain_entity['labels']=[previous_entity]
+                        new_fine_grain_entity['start']= fine_grain_entity_start
+                        new_fine_grain_entity['end']= len(new_data['tokens']) - 1
+                        new_fine_grain_entity['mention']= " ".join(new_data['tokens'][fine_grain_entity_start:-1])
+                        new_fine_grain_entity['mention_id']= file_name_for_log + '-' + str(mention_count)
+                        new_data['fine_grained_entities'].append(new_fine_grain_entity)
+                        fine_grain_entity_start=-1
+                        mention_count += 1
                     entity_start = cur_bounds[0]
                     previous_entity = named_ent[2:]
+                    fine_grain_entity_start = len(new_data['tokens']) - 1
+
         if previous_entity != 'O':
             if previous_entity not in new_data['entities']:
                 new_data['entities'][previous_entity] = []
@@ -849,7 +872,7 @@ def parse_file(onf_name: str, src_name_for_log: str = '') -> \
                     break
         del plain_text, tokens_with_labels
         for data_key in new_data:
-            if data_key == 'text' or data_key == 'source' or data_key == 'tokens' or data_key == 'BIO-tags':
+            if data_key == 'text' or data_key == 'source' or data_key == 'tokens' or data_key == 'BIO-tags' or data_key == 'fine_grained_entities':
                 continue
             for lingvo_key in new_data[data_key]:
                 new_bounds = strip_bounds(
@@ -868,6 +891,7 @@ def parse_file(onf_name: str, src_name_for_log: str = '') -> \
                     sorted(new_bounds)
                 )
         # new_data['source'] = file_name_for_log
+        print(new_data)
         all_data.append(new_data)
         if all_lines[end_idx] == final_separator:
             start_idx = -1

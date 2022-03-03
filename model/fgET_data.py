@@ -6,6 +6,8 @@ from torch.utils.data import Dataset
 from allennlp.modules.elmo import batch_to_ids
 import dask.dataframe as dd
 
+DIGIT_PATTERN = re.compile('\d')
+
 def bio_to_bioes(labels):
     """Convert a sequence of BIO labels to BIOES labels.
     :param labels: A list of labels.
@@ -42,15 +44,42 @@ def mask_to_distance(mask, mask_len, decay=.1):
         dist[i] = max(0, 1 - (i - end) * decay)
     return dist
 
+def numberize(inst, label_stoi):
+    tokens = inst['tokens']
+    tokens = [C.TOK_REPLACEMENT.get(t, t) for t in tokens]
+    seq_len = len(tokens)
+    char_ids = batch_to_ids([tokens])[0].tolist()
+    labels_nbz, men_mask, ctx_mask, men_ids = [], [], [], []
+    annotations = inst['annotations']
+    anno_num = len(annotations)
+    for annotation in annotations:
+        mention_id = annotation['mention_id']
+        labels = annotation['labels']
+        labels = [l.replace('geograpy', 'geography') for l in labels]
+        start = annotation['start']
+        end = annotation['end']
+
+        men_ids.append(mention_id)
+        labels = [label_stoi[l] for l in labels if l in label_stoi]
+        labels_nbz.append(labels)
+        men_mask.append([1 if i >= start and i < end else 0
+                            for i in range(seq_len)])
+        ctx_mask.append([1 if i < start or i >= end else 0
+                            for i in range(seq_len)])
+    return (char_ids, labels_nbz, men_mask, ctx_mask, men_ids, anno_num,
+            seq_len)
+
 class FetDataset(Dataset):
-    def __init__(self, training_file_path,gpu=False):
+    def __init__(self, training_file_path,word_tokens_field,tags_field,gpu=False):
         self.gpu = gpu
+        self.word_tokens_field = word_tokens_field
+        self.tags_field = tags_field
         self.data = dd.read_parquet(training_file_path,engine='fastparquet')
     def __getitem__(self, idx):
         data_transformed = self.data.loc[idx].compute()
         data_transformed = data_transformed.to_dict('records')
         record = data_transformed[0]
-        sample = (record['tokens'],record['BIO-tags'])
+        sample = (record[self.word_tokens_field],record[self.tags_field])
         return sample
 
     def __len__(self):
