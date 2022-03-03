@@ -14,14 +14,14 @@ pipe = PipelineController(
 pipe.set_default_execution_queue("compute")  # set to queue with GPU
 
 pipe.add_step(
-    name="dataset_parsing_to_json",
+    name="dataset_parsing_to_parquet",
     base_task_project=TASK_PROJECT_NAME,
-    base_task_name="dataset_parsing_to_json",
+    base_task_name="dataset_parsing_to_parquet",
     parameter_override={"General/source_tar": "ontonotes tar"},
 )
 pipe.add_step(
     name="retrieve unique NER tags",
-    parents=["dataset_parsing_to_json"],
+    parents=["dataset_parsing_to_parquet"],
     base_task_project=TASK_PROJECT_NAME,
     base_task_name="retrieve unique NER tags",
     parameter_override={
