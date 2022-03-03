@@ -43,8 +43,8 @@ def main():
     # )
     # dataset.finalize()
 
-    # task = Task.init(project_name="ontonotes", task_name="delete dataset")
-    # Dataset.delete(dataset_id='6b800f989ec24c64a44d1b839f8c44e7')
+    task = Task.init(project_name="ontonotes", task_name="delete dataset")
+    Dataset.delete(dataset_id='bb36c8ab86df4e2dbfb2a48a61449f5a')
 
     # raw unzipped ontonotes v5.0 files
     # task = Task.init(project_name="ontonotes", task_name="upload raw data")
@@ -65,13 +65,13 @@ def main():
     # dataset.finalize()
 
     # Manually annotated Fine-grained Entity Recognition corpus with 117 entity types annotated
-    task = Task.init(project_name="multimodal", task_name="upload 1k-WFB-g data")
-    dataset = Dataset.create(
-            dataset_project="datasets/multimodal", dataset_name="1k-WFB-g data"
-        )
-    dataset.add_files("data/1k-WFB-g_complete.json")
-    dataset.upload(output_url='s3://experiment-logging/multimodal')
-    dataset.finalize()
+    # task = Task.init(project_name="multimodal", task_name="upload 1k-WFB-g data")
+    # dataset = Dataset.create(
+    #         dataset_project="datasets/multimodal", dataset_name="1k-WFB-g data"
+    #     )
+    # dataset.add_files("data/1k-WFB-g_complete.json")
+    # dataset.upload(output_url='s3://experiment-logging/multimodal')
+    # dataset.finalize()
 
 
 
