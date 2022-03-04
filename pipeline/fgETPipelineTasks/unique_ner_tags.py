@@ -8,22 +8,24 @@ def retrieve_unique_tags():
 
     PROJECT_NAME = "fgET"
     TASK_NAME = "retrieve unique NER tags"
-    DATASET_PARTIAL_NAME = "DATASET"
+    DATASET_PROJECT = "datasets/multimodal"
+    DATASET_PARTIAL_NAME = "fgET data"
     TAGS_FIELD = 'labels'
+    JSON_FOR_TAGS = 'fgET.json'
 
     Task.force_requirements_env_freeze(force=True, requirements_file='requirements.txt')
     Task.add_requirements("torch")
     task = Task.init(project_name=PROJECT_NAME, task_name=TASK_NAME)
     task.set_base_docker("nvidia/cuda:11.4.0-cudnn8-devel-ubuntu20.04")
-    args = {'training_dataset':JSON_PARTIAL_NAME,'tags_field':TAGS_FIELD}
+    args = {'dataset':DATASET_PARTIAL_NAME,'dataset_project':DATASET_PROJECT,'tags_field':TAGS_FIELD,'json_for_tags':JSON_FOR_TAGS}
     task.connect(args)
-    task.execute_remotely()
+    task.execute_remotely(queue_name='cpu-only')
 
     from parsing import ner_tags
 
      # get tar datset uploaded
     dataset_dict = Dataset.list_datasets(
-        dataset_project=PROJECT_NAME, partial_name=args['training_dataset'], only_completed=False
+        dataset_project=args['dataset_project'], partial_name=args['dataset'], only_completed=False
     )
 
     datasets_obj = [
@@ -35,7 +37,7 @@ def retrieve_unique_tags():
     
     json_folder = dataset_obj.get_local_copy()
 
-    train_file = [file for file in dataset_obj.list_files() if file=='train.json'][0]
+    train_file = [file for file in dataset_obj.list_files() if file==args['json_for_tags']][0]
 
     file_path = json_folder + "/" + train_file
 
