@@ -122,6 +122,7 @@ def ontonotes_to_parquet():
             dataset_project=args['project'], dataset_name="ontonotes training"
         )
 
+    word_to_ix = {}
     for file in files:
         # task.upload_artifact(name=file, artifact_object=os.path.join(gettempdir(), file))
         ## register as dataset
@@ -137,18 +138,13 @@ def ontonotes_to_parquet():
         for i in range(0,len(docs)):
             training_records[str(i)] = docs[i]
 
-        if file == args['dst_file'].strip('/'):
-            training_data = [(doc["tokens"],doc["BIO-tags"]) for doc in docs]
-            word_to_ix = {}
-            for sentence, tags in training_data:
-                for word in sentence:
-                    if word not in word_to_ix:
-                        word_to_ix[word] = len(word_to_ix)
-            
-            with codecs.open(os.path.join(gettempdir(), 'word_to_ix.json'), mode='w', encoding='utf-8',
-                     errors='ignore') as fp:
-                json.dump(word_to_ix, fp=fp, ensure_ascii=False, indent = 4)
-            dataset.add_files(os.path.join(gettempdir(), 'word_to_ix.json'))
+        
+        training_data = [(doc["tokens"],doc["BIO-tags"]) for doc in docs]
+        
+        for sentence, tags in training_data:
+            for word in sentence:
+                if word not in word_to_ix:
+                    word_to_ix[word] = len(word_to_ix)
 
         json_object = json.dumps(training_records, indent = 4)
         df = pd.read_json(StringIO(json_object), orient ='index')
@@ -158,7 +154,11 @@ def ontonotes_to_parquet():
         dataset.add_files(os.path.join(gettempdir(), file))
         dataset.add_files(os.path.join(gettempdir(), parquet_file))
 
-        
+    with codecs.open(os.path.join(gettempdir(), 'word_to_ix.json'), mode='w', encoding='utf-8',
+                    errors='ignore') as fp:
+        json.dump(word_to_ix, fp=fp, ensure_ascii=False, indent = 4)
+    dataset.add_files(os.path.join(gettempdir(), 'word_to_ix.json'))
+    
     dataset.upload(output_url='s3://experiment-logging/multimodal')
 
 if __name__ == '__main__':

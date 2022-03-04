@@ -208,6 +208,8 @@ def model_train(training_file='data/train.json',tag_file='data/ner_tags.json',wo
     with open(word_to_ix_flie) as json_file:
         word_to_ix = json.load(json_file)
 
+    print("Words in vocab: ", word_to_ix)
+
     with open(tag_file) as json_file:
         tag_to_ix = json.load(json_file)
 
@@ -221,6 +223,9 @@ def model_train(training_file='data/train.json',tag_file='data/ner_tags.json',wo
 
     # Check predictions before training
     sentence, tags = next(iter(train_loader))
+    sentence = [word[0] for word in sentence]
+    tags = [tag[0] for tag in tags]
+
     with torch.no_grad():
         precheck_sent = prepare_sequence(sentence, word_to_ix)
         # print(precheck_sent)
@@ -234,6 +239,8 @@ def model_train(training_file='data/train.json',tag_file='data/ner_tags.json',wo
         pbar = tqdm(len(train_loader.dataset), position=0, leave=True)
         for batch in train_loader:
             sentence,tags = batch
+            sentence = [word[0] for word in sentence]
+            tags = [tag[0] for tag in tags]
             # Step 1. Remember that Pytorch accumulates gradients.
             # We need to clear them out before each instance
             model.zero_grad()
@@ -259,6 +266,8 @@ def model_train(training_file='data/train.json',tag_file='data/ner_tags.json',wo
 
         # Check predictions after training
         sentence, tags = next(iter(train_loader))
+        sentence = [word[0] for word in sentence]
+        tags = [tag[0] for tag in tags]
         with torch.no_grad():
             precheck_sent = prepare_sequence(sentence, word_to_ix)
             # print(precheck_sent)

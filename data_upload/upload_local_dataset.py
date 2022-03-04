@@ -1,4 +1,5 @@
 from clearml import Dataset,Task
+import json
 
 def create_dataset(folder_path, dataset_project, dataset_name):
     parent_dataset = _get_last_child_dataset(dataset_project, dataset_name)
@@ -44,7 +45,7 @@ def main():
     # dataset.finalize()
 
     task = Task.init(project_name="ontonotes", task_name="delete dataset")
-    Dataset.delete(dataset_id='bb36c8ab86df4e2dbfb2a48a61449f5a')
+    Dataset.delete(dataset_id='1a53e3d5c28f42429e9e08bb5de73113')
 
     # raw unzipped ontonotes v5.0 files
     # task = Task.init(project_name="ontonotes", task_name="upload raw data")
@@ -72,7 +73,6 @@ def main():
     # dataset.add_files("data/1k-WFB-g_complete.json")
     # dataset.upload(output_url='s3://experiment-logging/multimodal')
     # dataset.finalize()
-
 
 
 if __name__ == '__main__':

@@ -44,43 +44,107 @@ def mask_to_distance(mask, mask_len, decay=.1):
         dist[i] = max(0, 1 - (i - end) * decay)
     return dist
 
-def numberize(inst, label_stoi):
-    tokens = inst['tokens']
-    tokens = [C.TOK_REPLACEMENT.get(t, t) for t in tokens]
-    seq_len = len(tokens)
-    char_ids = batch_to_ids([tokens])[0].tolist()
-    labels_nbz, men_mask, ctx_mask, men_ids = [], [], [], []
-    annotations = inst['annotations']
-    anno_num = len(annotations)
-    for annotation in annotations:
-        mention_id = annotation['mention_id']
-        labels = annotation['labels']
-        labels = [l.replace('geograpy', 'geography') for l in labels]
-        start = annotation['start']
-        end = annotation['end']
-
-        men_ids.append(mention_id)
-        labels = [label_stoi[l] for l in labels if l in label_stoi]
-        labels_nbz.append(labels)
-        men_mask.append([1 if i >= start and i < end else 0
-                            for i in range(seq_len)])
-        ctx_mask.append([1 if i < start or i >= end else 0
-                            for i in range(seq_len)])
-    return (char_ids, labels_nbz, men_mask, ctx_mask, men_ids, anno_num,
-            seq_len)
-
 class FetDataset(Dataset):
-    def __init__(self, training_file_path,word_tokens_field,tags_field,gpu=False):
+    def __init__(self, training_file_path,tokens_field,entities_field,label_stoi,gpu=False):
         self.gpu = gpu
-        self.word_tokens_field = word_tokens_field
-        self.tags_field = tags_field
+        self.pad = C.PAD_INDEX
+        self.entities_field = entities_field
+        self.tokens_field = tokens_field
+        self.label_stoi = label_stoi
+        self.label_size = len(label_stoi)
         self.data = dd.read_parquet(training_file_path,engine='fastparquet')
     def __getitem__(self, idx):
         data_transformed = self.data.loc[idx].compute()
         data_transformed = data_transformed.to_dict('records')
         record = data_transformed[0]
-        sample = (record[self.word_tokens_field],record[self.tags_field])
-        return sample
+        record_dict = {"tokens":record[self.tokens_field],"entities":record[self.entities_field]}
+        instance = self.process_instance(record_dict,self.label_stoi)
+        return instance
 
     def __len__(self):
         return len(self.data)
+
+    def process_instance(inst, label_stoi):
+        tokens = inst['tokens']
+        tokens = [C.TOK_REPLACEMENT.get(t, t) for t in tokens]
+        seq_len = len(tokens)
+        char_ids = batch_to_ids([tokens])[0].tolist()
+        labels_nbz, men_mask, ctx_mask, men_ids, mentions = [], [], [], [], []
+        annotations = inst['entities']
+        anno_num = len(annotations)
+        for annotation in annotations:
+            mention_id = annotation['mention_id']
+            labels = annotation['labels']
+            labels = [l.replace('geograpy', 'geography') for l in labels]
+            start = annotation['start']
+            end = annotation['end']
+
+            men_ids.append(mention_id)
+            mentions.append(annotation['mention'])
+            labels = [label_stoi[l] for l in labels if l in label_stoi]
+            labels_nbz.append(labels)
+            men_mask.append([1 if i >= start and i < end else 0
+                                for i in range(seq_len)])
+            ctx_mask.append([1 if i < start or i >= end else 0
+                                for i in range(seq_len)])
+        return (char_ids, labels_nbz, men_mask, ctx_mask, men_ids, mentions, anno_num,
+                seq_len)
+
+    def batch_process(self, batch):
+        
+        # Process the batch
+        seq_lens = [x[-1] for x in batch]
+        max_seq_len = max(seq_lens)
+
+        batch_char_ids = []
+        batch_labels = []
+        batch_men_mask = []
+        batch_dist = []
+        batch_ctx_mask = []
+        batch_gathers = []
+        batch_men_ids = []
+        batch_mentions = []
+
+        for inst_idx, inst in enumerate(batch):
+
+            char_ids, labels, men_mask, ctx_mask, men_ids, mentions, anno_num, seq_len = inst
+
+            # Elmo Character ids
+            batch_char_ids.append(char_ids + [[self.pad] * C.ELMO_MAX_CHAR_LEN
+                                              for _ in range(max_seq_len - seq_len)])
+            # Instance labels
+            for ls in labels:
+                batch_labels.append([1 if l in ls else 0
+                                     for l in range(self.label_size)])
+            # mention masks
+            for mask in men_mask:
+                batch_men_mask.append(mask + [self.pad] * (max_seq_len - seq_len))
+                batch_dist.append(mask_to_distance(mask, seq_len)
+                                  + [self.pad] * (max_seq_len - seq_len))
+            #context masks
+            for mask in ctx_mask:
+                batch_ctx_mask.append(mask + [self.pad] * (max_seq_len - seq_len))
+
+            batch_gathers.extend([inst_idx] * anno_num)
+
+            batch_men_ids.extend(men_ids)
+            batch_mentions.extend(mentions)
+
+        if self.gpu:
+            batch_char_ids = torch.cuda.LongTensor(batch_char_ids)
+            batch_labels = torch.cuda.FloatTensor(batch_labels)
+            batch_men_mask = torch.cuda.FloatTensor(batch_men_mask)
+            batch_ctx_mask = torch.cuda.FloatTensor(batch_ctx_mask)
+            batch_gathers = torch.cuda.LongTensor(batch_gathers)
+            batch_dist = torch.cuda.FloatTensor(batch_dist)
+
+        else:
+            batch_char_ids = torch.LongTensor(batch_char_ids)
+            batch_labels = torch.FloatTensor(batch_labels)
+            batch_men_mask = torch.FloatFloatTensorTensor(batch_men_mask)
+            batch_ctx_mask = torch.LongTensor(batch_ctx_mask)
+            batch_gathers = torch.LongTensor(batch_gathers)
+            batch_dist = torch.FloatTensor(batch_dist)
+
+        return (batch_char_ids, batch_labels, batch_men_mask, batch_ctx_mask,
+                batch_dist, batch_gathers, batch_men_ids)
