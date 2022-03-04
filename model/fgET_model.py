@@ -132,4 +132,4 @@ class fgET(nn.Module):
         scores = outputs.sigmoid()
         predictions = self._prediction(outputs, predict_top=predict_top)
         self.train()
-        return predictions
+        return predictions,scores
