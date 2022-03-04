@@ -147,4 +147,4 @@ class FetDataset(Dataset):
             batch_dist = torch.FloatTensor(batch_dist)
 
         return (batch_char_ids, batch_labels, batch_men_mask, batch_ctx_mask,
-                batch_dist, batch_gathers, batch_men_ids)
+                batch_dist, batch_gathers, batch_men_ids, batch_mentions)

@@ -50,6 +50,7 @@ def retrieve_unique_tags():
         dataset_obj.add_files(os.path.join(gettempdir(), file))
 
     dataset_obj.upload(output_url='s3://experiment-logging/multimodal')
+    dataset_obj.finalize()
     
 
 if __name__ == '__main__':
