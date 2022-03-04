@@ -69,8 +69,7 @@ def wfb_to_parquet():
         for mention in doc['mentions']:
             mention_dict = dict()
             mention_dict['labels'] = mention['labels']
-            for label in mention['labels']:
-                doc_dict['labels'].append(label)
+            doc_dict['labels'].extend(mention['labels'])
             mention_dict['start'] = mention['start']
             mention_dict['end'] = mention['end']
             mention_dict['mention'] = mention['name']
