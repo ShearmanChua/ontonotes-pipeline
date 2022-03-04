@@ -113,6 +113,8 @@ def wfb_to_parquet():
                 errors='ignore') as fp:
         json.dump(train_dict, fp=fp, ensure_ascii=False, indent = 4)
 
+    dataset.add_files(os.path.join(gettempdir(), 'train.json'))
+
     #val df json
     val_dict = {'VALIDATION': []}
 
@@ -122,6 +124,8 @@ def wfb_to_parquet():
     with codecs.open(os.path.join(gettempdir(), 'validation.json'), mode='w', encoding='utf-8',
                 errors='ignore') as fp:
         json.dump(val_dict, fp=fp, ensure_ascii=False, indent = 4)
+
+    dataset.add_files(os.path.join(gettempdir(), 'validation.json'))
 
     #test df json
     test_dict = {'TEST': []}
@@ -133,6 +137,8 @@ def wfb_to_parquet():
                 errors='ignore') as fp:
         json.dump(test_dict, fp=fp, ensure_ascii=False, indent = 4)
 
+    dataset.add_files(os.path.join(gettempdir(), 'test.json'))
+
     #convert dataframes to parquet
     df.to_parquet(os.path.join(gettempdir(), 'full_wfb.parquet'),engine='fastparquet')
     train.to_parquet(os.path.join(gettempdir(), 'train.parquet'),engine='fastparquet')
@@ -142,7 +148,7 @@ def wfb_to_parquet():
     dataset.add_files(os.path.join(gettempdir(), 'full_wfb.parquet'))
     dataset.add_files(os.path.join(gettempdir(), 'train.parquet'))
     dataset.add_files(os.path.join(gettempdir(), 'validation.parquet'))
-    dataset.add_files(os.path.join(gettempdir(), 'validation.parquet'))
+    dataset.add_files(os.path.join(gettempdir(), 'test.parquet'))
 
     dataset.upload(output_url='s3://experiment-logging/multimodal')
 
