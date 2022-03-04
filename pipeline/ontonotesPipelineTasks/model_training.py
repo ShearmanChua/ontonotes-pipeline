@@ -1,8 +1,10 @@
-from clearml import Task, Dataset
 import os
 from os import listdir
 from os.path import isfile, join
 from tempfile import gettempdir
+from argparse import ArgumentParser
+
+from clearml import Task, Dataset
 
 def model_training():
 
