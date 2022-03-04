@@ -3,6 +3,7 @@ import math
 import torch
 import torch.nn as nn
 from allennlp.modules.elmo import Elmo
+from pytorch_pretrained_bert import BertAdam
 
 class fgET(nn.Module):
 

@@ -17,6 +17,7 @@ def model_training():
     task = Task.init(project_name=PROJECT_NAME, task_name=TASK_NAME)
     # task.set_base_docker("nvcr.io/nvidia/pytorch:20.08-py3")
     task.set_base_docker("nvidia/cuda:11.4.0-cudnn8-devel-ubuntu20.04")
+
     args = {'training_dataset':JSON_PARTIAL_NAME}
     task.connect(args)
     task.execute_remotely()
@@ -25,9 +26,12 @@ def model_training():
 
     # ============= imports =============
     from collections import defaultdict
-    from pytorch_pretrained_bert import BertAdam
     from model.fgET_model import fgET
     from data import BufferDataset
+
+    arg_parser = ArgumentParser()
+
+def run_training():
 
 if __name__ == '__main__':
     model_training()
