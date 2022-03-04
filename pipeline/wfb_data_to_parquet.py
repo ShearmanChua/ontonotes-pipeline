@@ -94,11 +94,11 @@ def wfb_to_parquet():
         print(df.head())
 
         # train, val, test split of dataframe
-        train,val,test = np.split(df.sample(frac=1, random_state=42), [int(0.6*len(df)), int(0.8*len(df))])
+        train,val,test = np.split(df.sample(frac=1, random_state=42), [int(.6*len(df)), int(.8*len(df))])
 
-        print(train.head())
-        print(val.head())
-        print(test.head())
+        print("train df:", train.head())
+        print("val df:", val.head())
+        print("test df:", test.head())
 
         #train df json
         train_dict = {'TRAINING': []}
