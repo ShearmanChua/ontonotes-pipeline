@@ -15,9 +15,8 @@ from clearml import Task, Dataset
 
 def model_training():
 
-    PROJECT_NAME = "ontonotes"
+    PROJECT_NAME = "fgET"
     TASK_NAME = "model_training"
-    JSON_PARTIAL_NAME = "training"
 
     Task.force_requirements_env_freeze(force=True, requirements_file='requirements.txt')
     Task.add_requirements("torch")
@@ -25,7 +24,7 @@ def model_training():
     # task.set_base_docker("nvcr.io/nvidia/pytorch:20.08-py3")
     task.set_base_docker("nvidia/cuda:11.4.0-cudnn8-devel-ubuntu20.04")
 
-    args = {'training_dataset':JSON_PARTIAL_NAME}
+    args = {'project_name':PROJECT_NAME,'task_name':TASK_NAME}
     task.connect(args)
     task.execute_remotely()
 
@@ -148,7 +147,7 @@ def model_training():
             arranged_results['scores'] = score
 
     dataset = Dataset.create(
-            dataset_project=args['results_dataset_project'], dataset_name=args['results_dataset_name']
+        dataset_project=args['results_dataset_project'], dataset_name=args['results_dataset_name']
     )
 
     if args.test:

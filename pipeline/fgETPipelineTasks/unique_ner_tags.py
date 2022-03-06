@@ -23,7 +23,7 @@ def retrieve_unique_tags():
 
     from parsing import ner_tags
 
-     # get tar datset uploaded
+    # get datset uploaded
     dataset_dict = Dataset.list_datasets(
         dataset_project=args['dataset_project'], partial_name=args['dataset'], only_completed=False
     )
