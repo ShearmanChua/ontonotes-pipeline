@@ -8,6 +8,8 @@ import codecs
 from argparse import ArgumentParser
 from pandas import array
 import tqdm
+import pandas as pd
+from io import StringIO
 
 from clearml import Task, Dataset
 
@@ -149,7 +151,24 @@ def model_training():
             dataset_project=args['results_dataset_project'], dataset_name=args['results_dataset_name']
     )
 
-    
+    if args.test:
+        with codecs.open(os.path.join(gettempdir(), 'results.json'), mode='w', encoding='utf-8',
+                    errors='ignore') as fp:
+            json.dump(arranged_results, fp=fp, ensure_ascii=False, indent = 4)
+        
+        json_object = json.dumps(arranged_results, indent = 4)
+        df = pd.read_json(StringIO(json_object), orient ='index')
+        logger.report_table(title='results',series='pandas DataFrame',iteration=0,table_plot=df)
+
+    files = [f for f in listdir(gettempdir()) if isfile(join(gettempdir(), f)) and (f.endswith('.json') or f.endswith('.mdl'))]
+
+    for file in files:
+        dataset.add_files(os.path.join(gettempdir(), file))
+
+    dataset.upload(output_url='s3://experiment-logging/multimodal')
+    dataset.finalize()
+
+
 
 def run_training(train_loader,validation_loader,model,optimizer,epochs,logger,state,best_scores):
 
