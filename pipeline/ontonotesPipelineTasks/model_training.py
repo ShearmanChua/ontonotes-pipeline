@@ -25,7 +25,7 @@ def model_training():
 
     from model import simple_model
 
-     # get tar datset uploaded
+    # get datset uploaded
     dataset_dict = Dataset.list_datasets(
         dataset_project=PROJECT_NAME, partial_name=args["training_dataset"], only_completed=False
     )

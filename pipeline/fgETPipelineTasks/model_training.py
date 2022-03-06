@@ -3,6 +3,11 @@ import os
 from os import listdir
 from os.path import isfile, join
 from tempfile import gettempdir
+import json
+import codecs
+from argparse import ArgumentParser
+from pandas import array
+import tqdm
 
 from clearml import Task, Dataset
 
@@ -26,12 +31,285 @@ def model_training():
 
     # ============= imports =============
     from collections import defaultdict
+
+    import torch
+    from torch.utils.data import DataLoader
+
     from model.fgET_model import fgET
-    from data import BufferDataset
+    from model.fgET_data import FetDataset
 
     arg_parser = ArgumentParser()
+    arg_parser.add_argument('--svd')
+    arg_parser.add_argument('--lr', type=float, default=5e-5)
+    arg_parser.add_argument('--max_epoch', type=int, default=5)
+    arg_parser.add_argument('--batch_size', type=int, default=32)
+    arg_parser.add_argument('--elmo_dataset_project', type=str, default='datasets/multimodal')
+    arg_parser.add_argument('--elmo_dataset_name', type=str, default='elmo weights')
+    arg_parser.add_argument('--elmo_dropout', type=float, default=.5)
+    arg_parser.add_argument('--repr_dropout', type=float, default=.2)
+    arg_parser.add_argument('--dist_dropout', type=float, default=.2)
+    arg_parser.add_argument('--gpu', type=bool, default = True)
+    arg_parser.add_argument('--device', type=int, default=0)
+    arg_parser.add_argument('--weight_decay', type=float, default=0.001)
+    arg_parser.add_argument('--latent_size', type=int, default=0)
+    arg_parser.add_argument('--train', type=bool, default = True)
+    arg_parser.add_argument('--test', type=bool, default = True)
+    arg_parser.add_argument('--labels_dataset_project', type=str, default='datasets/multimodal')
+    arg_parser.add_argument('--labels_dataset_name', type=str, default='fgET data')
+    arg_parser.add_argument('--labels_file_name', type=str, default='ner_tags.json')
+    arg_parser.add_argument('--fgETdata_dataset_project', type=str, default='datasets/multimodal')
+    arg_parser.add_argument('--fgETdata_dataset_name', type=str, default='fgET data')
+    arg_parser.add_argument('--train_file_name', type=str, default='train.parquet')
+    arg_parser.add_argument('--val_file_name', type=str, default='validation.parquet')
+    arg_parser.add_argument('--test_file_name', type=str, default='test.parquet')
+    arg_parser.add_argument('--tokens_field', type=str, default='tokens')
+    arg_parser.add_argument('--entities_field', type=str, default='fine_grained_entities')
+    arg_parser.add_argument('--results_dataset_project', type=str, default='datasets/multimodal')
+    arg_parser.add_argument('--results_dataset_name', type=str, default='fgET results')
 
-def run_training():
+    args = arg_parser.parse_args()
+    task.connect(args)
+
+    timestamp = time.strftime('%Y%m%d_%H%M%S', time.localtime())
+    results_dataset_name = args.results_dataset_name + ' ' + timestamp
+
+    print("Loading labels dictionary from clearML {} dataset from file {}".format(args.labels_dataset_name,args.labels_file_name))
+    labels_file_path = get_clearml_file_path(args.labels_dataset_project,args.labels_dataset_name,args.labels_file_name)
+
+    with open(labels_file_path) as json_file:
+        labels_strtoidx = json.load(json_file)
+
+    labels_idxtostr = {i: s for s, i in labels_strtoidx.items()}
+    label_size = len(labels_strtoidx)
+    print('Label size: {}'.format(len(labels_strtoidx)))
+
+    # Load data sets
+    print('Loading data sets')
+
+    train_file_path = get_clearml_file_path(args.fgETdata_dataset_project,args.fgETdata_dataset_name,args.train_file_name)
+    val_file_path = get_clearml_file_path(args.fgETdata_dataset_project,args.fgETdata_dataset_name,args.val_file_name)
+    test_file_path = get_clearml_file_path(args.fgETdata_dataset_project,args.fgETdata_dataset_name,args.test_file_name)
+
+    train_set = FetDataset(train_file_path,args.tokens_field,args.entities_field,labels_strtoidx,args.gpu)
+    train_loader = DataLoader(train_set, batch_size=args.batch_size, shuffle=False,collate_fn=train_set.batch_process)
+    val_set = FetDataset(val_file_path,args.tokens_field,args.entities_field,labels_strtoidx,args.gpu)
+    val_loader = DataLoader(val_set, batch_size=args.batch_size, shuffle=False,collate_fn=val_set.batch_process)
+    if args.test:
+        test_set = FetDataset(test_file_path,args.tokens_field,args.entities_field,labels_strtoidx,args.gpu)
+        test_loader = DataLoader(test_set, batch_size=args.batch_size, shuffle=False,collate_fn=test_set.batch_process)
+
+
+    # Set GPU device
+    gpu = torch.cuda.is_available() and args.gpu
+    if gpu:
+        torch.cuda.set_device(args.device)
+
+    # Build model
+    model = fgET(label_size,
+                elmo_option=args.elmo_option,
+                elmo_weight=args.elmo_weight,
+                elmo_dropout=args.elmo_dropout,
+                repr_dropout=args.repr_dropout,
+                dist_dropout=args.dist_dropout,
+                latent_size=args.latent_size,
+                svd=args.svd
+                )
+    if gpu:
+        model.cuda()
+
+    total_step = args.max_epoch * len(train_loader)
+    optimizer = model.configure_optimizers(args.weight_decay,args.lr,total_step)
+
+    state = {
+        'model': model.state_dict(),
+        'args': vars(args),
+        'vocab': {'label': labels_strtoidx}
+    }
+
+    best_scores = {
+        'best_acc_val': 0, 'best_mac_val': 0, 'best_mic_val': 0,
+        'best_acc_test': 0, 'best_mac_test': 0, 'best_mic_test': 0
+    }
+
+    if args.train:
+        model,state,best_scores = run_training(train_loader,val_loader,model,optimizer,args.max_epoch,logger,state,best_scores)
+    if args.test:
+       results,best_scores = run_test(test_loader,model,logger,best_scores)
+       arranged_results = dict()
+       for gold, pred, men_id,mention,score in zip(results['gold'],results['pred'],results['ids'],results['mentions'],results['scores']):
+            gold_labels = [labels_idxtostr[i] for i, l in enumerate(gold) if l]
+            pred_labels = [labels_idxtostr[i] for i, l in enumerate(pred) if l]
+            arranged_results['mention_id'] = men_id
+            arranged_results['mention'] = mention
+            arranged_results['gold'] = gold_labels
+            arranged_results['predictions'] = pred_labels
+            arranged_results['scores'] = score
+
+    dataset = Dataset.create(
+            dataset_project=args['results_dataset_project'], dataset_name=args['results_dataset_name']
+    )
+
+def run_training(train_loader,validation_loader,model,optimizer,epochs,logger,state,best_scores):
+
+    from collections import defaultdict
+    import torch
+    from model.fgET_scorer import calculate_metrics
+
+    for epoch in range(epochs):
+        print('-' * 20, 'Epoch {}'.format(epoch), '-' * 20)
+        start_time = time.time()
+
+        epoch_loss = []
+        val_loss = []
+        progress = tqdm.tqdm(total=len(train_loader)+len(validation_loader), mininterval=1,
+                            desc='Epoch: {}'.format(epoch))
+
+        print("Training step...")
+        for batch in train_loader:
+
+            elmos, labels, men_masks, ctx_masks, dists, gathers, men_ids, mentions = batch
+
+            progress.update(1)
+            optimizer.zero_grad()
+            loss = model.forward(elmos, labels, men_masks, ctx_masks, dists,
+                                 gathers, None)
+
+            loss.backward()
+            optimizer.step()
+            epoch_loss.append(loss.item())
+
+        avg_train_loss = sum(epoch_loss)/len(epoch_loss)
+        if logger is not None:
+            logger.report_scalar(title='Train',series='Loss', value=avg_train_loss,iteration=epoch)
+
+        print("Validation step...")
+
+        model.eval()
+        
+        results = defaultdict(list)
+        with torch.no_grad():
+            for batch in validation_loader:
+
+                elmos, labels, men_masks, ctx_masks, dists, gathers, men_ids, mentions = batch
+
+                progress.update(1)
+
+                preds,scores = model.predict(elmos, men_masks, ctx_masks, dists, gathers)
+                results['gold'].extend(labels.int().data.tolist())
+                results['pred'].extend(preds.int().data.tolist())
+                results['ids'].extend(men_ids)
+
+                loss = model.forward(elmos, labels, men_masks, ctx_masks, dists,
+                                    gathers, None)
+
+                val_loss.append(loss.item())
+
+        model.train()
+
+        avg_val_loss = sum(val_loss)/len(val_loss)
+        if logger is not None:
+            logger.report_scalar(title='Validation',series='Loss', value=avg_val_loss,iteration=epoch)
+
+        metrics = calculate_metrics(results['gold'], results['pred'])
+        print('---------- Validation set ----------')
+        print('Strict accuracy: {:.2f}'.format(metrics.accuracy))
+        if logger is not None:
+            logger.report_scalar(title='Validation',series='Accuracy', value=metrics.accuracy,iteration=epoch)
+        print('Macro: P: {:.2f}, R: {:.2f}, F:{:.2f}'.format(
+            metrics.macro_prec,
+            metrics.macro_rec,
+            metrics.macro_fscore))
+        print('Micro: P: {:.2f}, R: {:.2f}, F:{:.2f}'.format(
+            metrics.micro_prec,
+            metrics.micro_rec,
+            metrics.micro_fscore))
+        # Save model
+        if metrics.accuracy > best_scores['best_acc_val']:
+            best_scores['best_acc_val'] = metrics.accuracy
+        if metrics.macro_fscore > best_scores['best_mac_val']:
+            best_scores['best_mac_val'] = metrics.macro_fscore
+            print('Saving new best macro F1 model')
+            torch.save(state, os.path.join(gettempdir(), 'best_mac.mdl'))
+        if metrics.micro_fscore > best_scores['best_mic_val']:
+            best_scores['best_mic_val'] = metrics.micro_fscore
+            print('Saving new best micro F1 model')
+            torch.save(state, os.path.join(gettempdir(), 'best_mic.mdl'))
+
+        progress.close()
+
+
+    return model,state,best_scores
+
+def run_test(test_loader,model,logger,best_scores):
+    from collections import defaultdict
+    import torch
+    from model.fgET_scorer import calculate_metrics
+
+    progress = tqdm.tqdm(total=len(test_loader), mininterval=1,
+                        desc='Test')
+
+    results = defaultdict(list)
+    with torch.no_grad():
+        for batch in test_loader:
+
+            elmos, labels, men_masks, ctx_masks, dists, gathers, men_ids, mentions = batch
+
+            progress.update(1)
+
+            preds,scores = model.predict(elmos, men_masks, ctx_masks, dists, gathers)
+            results['gold'].extend(labels.int().data.tolist())
+            results['pred'].extend(preds.int().data.tolist())
+            results['scores'].extend(scores.int().data.tolist())
+            results['ids'].extend(men_ids)
+            results['mentions'].extend(mentions)
+
+    metrics = calculate_metrics(results['gold'], results['pred'])
+    print('---------- Test set ----------')
+    print('Strict accuracy: {:.2f}'.format(metrics.accuracy))
+    if logger is not None:
+        logger.report_scalar(title='Test',series='Accuracy', value=metrics.accuracy,iteration=1)
+    print('Macro: P: {:.2f}, R: {:.2f}, F:{:.2f}'.format(
+        metrics.macro_prec,
+        metrics.macro_rec,
+        metrics.macro_fscore))
+    print('Micro: P: {:.2f}, R: {:.2f}, F:{:.2f}'.format(
+        metrics.micro_prec,
+        metrics.micro_rec,
+        metrics.micro_fscore))
+    
+    best_scores['best_acc_test'] = metrics.accuracy
+    best_scores['best_mac_test'] = metrics.macro_fscore
+    best_scores['best_mic_test'] = metrics.micro_fscore
+
+    for k, v in best_scores.items():
+        print('{}: {:.2f}'.format(k.replace('_', ' '), v))
+    progress.close()
+
+    return results,best_scores
+
+
+def get_clearml_file_path(dataset_project,dataset_name,file_name):
+
+    # get uploaded dataset from clearML
+    dataset_dict = Dataset.list_datasets(
+        dataset_project=dataset_project, partial_name=dataset_name, only_completed=False
+    )
+
+    datasets_obj = [
+        Dataset.get(dataset_id=dataset_dict["id"]) for dataset_dict in dataset_dict
+    ]
+
+    # reverse list due to child-parent dependency, and get the first dataset_obj
+    dataset_obj = datasets_obj[::-1][0]
+    
+    folder = dataset_obj.get_local_copy()
+
+    file = [file for file in dataset_obj.list_files() if file==file_name][0]
+
+    file_path = folder + "/" + file
+
+    return file_path
+
 
 if __name__ == '__main__':
     model_training()

@@ -118,6 +118,13 @@ class fgET(nn.Module):
         loss = self.criterion(outputs, labels)
         return loss
 
+    def configure_optimizers(self,weight_decay,lr,total_step):
+        optimizer = BertAdam(filter(lambda x: x.requires_grad, self.parameters()),
+                             lr=lr, warmup=.1,
+                             weight_decay=weight_decay,
+                             t_total=total_step)
+        return optimizer
+
     def _prediction(self, outputs, predict_top=True):
         _, highest = outputs.max(dim=1)
         highest = highest.int().tolist()
