@@ -46,7 +46,6 @@ def model_training():
     arg_parser.add_argument('--batch_size', type=int, default=32)
     arg_parser.add_argument('--elmo_dataset_project', type=str, default='datasets/multimodal')
     arg_parser.add_argument('--elmo_dataset_name', type=str, default='elmo weights')
-    arg_parser.add_argument('--elmo_dataset_name', type=str, default='elmo weights')
     arg_parser.add_argument('--elmo_option_file', type=str, default='elmo_5.5B_options.json')
     arg_parser.add_argument('--elmo_weights_file', type=str, default='elmo_5.5B_weights.hdf5')
     arg_parser.add_argument('--elmo_dropout', type=float, default=.5)
