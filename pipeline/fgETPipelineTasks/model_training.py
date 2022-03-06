@@ -26,18 +26,6 @@ def model_training():
 
     args = {'project_name':PROJECT_NAME,'task_name':TASK_NAME}
     task.connect(args)
-    task.execute_remotely()
-
-    logger = task.get_logger()
-
-    # ============= imports =============
-    from collections import defaultdict
-
-    import torch
-    from torch.utils.data import DataLoader
-
-    from model.fgET_model import fgET
-    from model.fgET_data import FetDataset
 
     arg_parser = ArgumentParser()
     arg_parser.add_argument('--svd')
@@ -72,6 +60,20 @@ def model_training():
 
     args = arg_parser.parse_args()
     task.connect(vars(args),name='General')
+
+    task.execute_remotely()
+
+    logger = task.get_logger()
+
+    # ============= imports =============
+    from collections import defaultdict
+
+    import torch
+    from torch.utils.data import DataLoader
+
+    from model.fgET_model import fgET
+    from model.fgET_data import FetDataset
+
 
     timestamp = time.strftime('%Y%m%d_%H%M%S', time.localtime())
     results_dataset_name = args.results_dataset_name + ' ' + timestamp
