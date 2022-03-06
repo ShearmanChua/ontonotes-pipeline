@@ -98,6 +98,10 @@ def wfb_to_parquet():
     # train, val, test split of dataframe
     train,val,test = np.split(df.sample(frac=1, random_state=42), [int(0.6*len(df)), int(0.8*len(df))])
 
+    train.reset_index(drop=True,inplace=True)
+    val.reset_index(drop=True,inplace=True)
+    test.reset_index(drop=True,inplace=True)
+
     print("train df:", train)
     print("val df:", val)
     print("test df:", test)
