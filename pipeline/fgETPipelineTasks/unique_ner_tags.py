@@ -19,7 +19,7 @@ def retrieve_unique_tags():
     task.set_base_docker("nvidia/cuda:11.4.0-cudnn8-devel-ubuntu20.04")
     args = {'dataset':DATASET_PARTIAL_NAME,'dataset_project':DATASET_PROJECT,'tags_field':TAGS_FIELD,'json_for_tags':JSON_FOR_TAGS}
     task.connect(args)
-    task.execute_remotely(queue_name='cpu-only')
+    task.execute_remotely()
 
     from parsing import ner_tags
 
