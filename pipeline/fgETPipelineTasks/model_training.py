@@ -149,6 +149,8 @@ def model_training():
             dataset_project=args['results_dataset_project'], dataset_name=args['results_dataset_name']
     )
 
+    
+
 def run_training(train_loader,validation_loader,model,optimizer,epochs,logger,state,best_scores):
 
     from collections import defaultdict
