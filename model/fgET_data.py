@@ -64,7 +64,7 @@ class FetDataset(Dataset):
     def __len__(self):
         return len(self.data)
 
-    def process_instance(inst, label_stoi):
+    def process_instance(self,inst, label_stoi):
         tokens = inst['tokens']
         tokens = [C.TOK_REPLACEMENT.get(t, t) for t in tokens]
         seq_len = len(tokens)
