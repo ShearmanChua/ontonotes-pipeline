@@ -26,7 +26,7 @@ def wfb_to_parquet():
     task.set_base_docker("nvidia/cuda:11.4.0-cudnn8-devel-ubuntu20.04")
     args = {"project":PROJECT_NAME,"source_dataset":DATASET_PARTIAL_NAME,"dataset_project":DATASET_PROJECT, "dataset_name":DATASET_NAME}
     task.connect(args)
-    # task.execute_remotely(queue_name='cpu-only')
+    task.execute_remotely()
 
     # get uploaded dataset
     dataset_dict = Dataset.list_datasets(
