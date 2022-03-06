@@ -46,6 +46,9 @@ def model_training():
     arg_parser.add_argument('--batch_size', type=int, default=32)
     arg_parser.add_argument('--elmo_dataset_project', type=str, default='datasets/multimodal')
     arg_parser.add_argument('--elmo_dataset_name', type=str, default='elmo weights')
+    arg_parser.add_argument('--elmo_dataset_name', type=str, default='elmo weights')
+    arg_parser.add_argument('--elmo_option_file', type=str, default='elmo_5.5B_options.json')
+    arg_parser.add_argument('--elmo_weights_file', type=str, default='elmo_5.5B_weights.hdf5')
     arg_parser.add_argument('--elmo_dropout', type=float, default=.5)
     arg_parser.add_argument('--repr_dropout', type=float, default=.2)
     arg_parser.add_argument('--dist_dropout', type=float, default=.2)
@@ -69,13 +72,17 @@ def model_training():
     arg_parser.add_argument('--results_dataset_name', type=str, default='fgET results')
 
     args = arg_parser.parse_args()
-    task.connect(args)
+    task.connect(vars(args),name='General')
 
     timestamp = time.strftime('%Y%m%d_%H%M%S', time.localtime())
     results_dataset_name = args.results_dataset_name + ' ' + timestamp
 
     print("Loading labels dictionary from clearML {} dataset from file {}".format(args.labels_dataset_name,args.labels_file_name))
     labels_file_path = get_clearml_file_path(args.labels_dataset_project,args.labels_dataset_name,args.labels_file_name)
+
+    print("Loading elmo embeddings from clearML {} dataset".format(args.elmo_dataset_name))
+    elmo_option = get_clearml_file_path(args.elmo_dataset_project,args.elmo_dataset_name,args.elmo_option_file)
+    elmo_weight = get_clearml_file_path(args.elmo_dataset_project,args.elmo_dataset_name,args.elmo_weights_file)
 
     with open(labels_file_path) as json_file:
         labels_strtoidx = json.load(json_file)
@@ -107,8 +114,8 @@ def model_training():
 
     # Build model
     model = fgET(label_size,
-                elmo_option=args.elmo_option,
-                elmo_weight=args.elmo_weight,
+                elmo_option=elmo_option,
+                elmo_weight=elmo_weight,
                 elmo_dropout=args.elmo_dropout,
                 repr_dropout=args.repr_dropout,
                 dist_dropout=args.dist_dropout,
