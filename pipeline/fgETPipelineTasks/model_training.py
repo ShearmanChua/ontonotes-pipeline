@@ -155,7 +155,7 @@ def model_training():
             arranged_results['scores'] = score
 
     dataset = Dataset.create(
-        dataset_project=args['results_dataset_project'], dataset_name=args['results_dataset_name']
+        dataset_project=args.results_dataset_project, dataset_name=args.results_dataset_name
     )
 
     if args.test:
