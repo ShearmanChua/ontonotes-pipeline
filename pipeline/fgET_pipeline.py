@@ -29,7 +29,7 @@ pipe.add_step(
     base_task_name="retrieve unique NER tags",
     parameter_override={
         "General/dataset": "fgET data",
-        "json_for_tags": "fgET.json"
+        "General/json_for_tags": "fgET.json"
     },
 )
 pipe.add_step(
