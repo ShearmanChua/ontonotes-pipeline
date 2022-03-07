@@ -30,7 +30,7 @@ def model_training():
     arg_parser = ArgumentParser()
     arg_parser.add_argument('--svd')
     arg_parser.add_argument('--lr', type=float, default=5e-5)
-    arg_parser.add_argument('--max_epoch', type=int, default=10)
+    arg_parser.add_argument('--max_epoch', type=int, default=5)
     arg_parser.add_argument('--batch_size', type=int, default=32)
     arg_parser.add_argument('--elmo_dataset_project', type=str, default='datasets/multimodal')
     arg_parser.add_argument('--elmo_dataset_name', type=str, default='elmo weights')
@@ -144,8 +144,9 @@ def model_training():
         model,state,best_scores = run_training(train_loader,val_loader,model,optimizer,args.max_epoch,logger,state,best_scores)
     if args.test:
        results,best_scores = run_test(test_loader,model,logger,best_scores)
-       arranged_results = dict()
+       collated_results = {'results':[]}
        for gold, pred, men_id,mention,score in zip(results['gold'],results['pred'],results['ids'],results['mentions'],results['scores']):
+            arranged_results = dict()
             gold_labels = [labels_idxtostr[i] for i, l in enumerate(gold) if l]
             pred_labels = [labels_idxtostr[i] for i, l in enumerate(pred) if l]
             arranged_results['mention_id'] = men_id
@@ -153,6 +154,7 @@ def model_training():
             arranged_results['gold'] = gold_labels
             arranged_results['predictions'] = pred_labels
             arranged_results['scores'] = score
+            collated_results['results'].append(arranged_results)
 
     dataset = Dataset.create(
         dataset_project=args.results_dataset_project, dataset_name=args.results_dataset_name
@@ -161,9 +163,9 @@ def model_training():
     if args.test:
         with codecs.open(os.path.join(gettempdir(), 'results.json'), mode='w', encoding='utf-8',
                     errors='ignore') as fp:
-            json.dump(arranged_results, fp=fp, ensure_ascii=False, indent = 4)
+            json.dump(collated_results, fp=fp, ensure_ascii=False, indent = 4)
         
-        json_object = json.dumps(arranged_results, indent = 4)
+        json_object = json.dumps(collated_results, indent = 4)
         df = pd.read_json(StringIO(json_object), orient ='index')
         logger.report_table(title='results',series='pandas DataFrame',iteration=0,table_plot=df)
 
