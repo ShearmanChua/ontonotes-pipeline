@@ -41,7 +41,7 @@ def model_training():
     arg_parser.add_argument('--dist_dropout', type=float, default=.2)
     arg_parser.add_argument('--gpu', type=bool, default = True)
     arg_parser.add_argument('--device', type=int, default=0)
-    arg_parser.add_argument('--weight_decay', type=float, default=0.001)
+    arg_parser.add_argument('--weight_decay', type=float, default=0.01)
     arg_parser.add_argument('--latent_size', type=int, default=0)
     arg_parser.add_argument('--train', type=bool, default = True)
     arg_parser.add_argument('--test', type=bool, default = True)

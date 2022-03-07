@@ -21,6 +21,8 @@ class fgET(nn.Module):
         self.label_size = label_size
         self.elmo = Elmo(elmo_option, elmo_weight, 1,
                          dropout=elmo_dropout)
+        for param in self.elmo.parameters():
+            param.requires_grad = False
         self.elmo_dim = self.elmo.get_output_dim()
 
         self.attn_dim = 1
