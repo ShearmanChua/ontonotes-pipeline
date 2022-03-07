@@ -16,7 +16,7 @@ from clearml import Task, Dataset
 def model_training():
 
     PROJECT_NAME = "fgET"
-    TASK_NAME = "model_training"
+    TASK_NAME = "model_training_frozen_elmo"
 
     Task.force_requirements_env_freeze(force=True, requirements_file='requirements.txt')
     Task.add_requirements("torch")
@@ -165,7 +165,13 @@ def model_training():
                     errors='ignore') as fp:
             json.dump(collated_results, fp=fp, ensure_ascii=False, indent = 4)
         
-        json_object = json.dumps(collated_results, indent = 4)
+        training_data = collated_results['results']
+        training_records = {}
+
+        for i in range(0,len(training_data)):
+            training_records[str(i)] = training_data[i]
+
+        json_object = json.dumps(training_records, indent = 4)
         df = pd.read_json(StringIO(json_object), orient ='index')
         logger.report_table(title='results',series='pandas DataFrame',iteration=0,table_plot=df)
 
