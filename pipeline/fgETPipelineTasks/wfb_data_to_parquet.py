@@ -73,7 +73,7 @@ def wfb_to_parquet():
             mention_dict['start'] = mention['start']
             mention_dict['end'] = mention['end']
             mention_dict['mention'] = mention['name']
-            mention_dict['mention_id'] = doc_dict['source'] = doc['fileid'] + '-' + str(mention_count)
+            mention_dict['mention_id'] = doc_dict['source'] + '-' + str(mention_count)
             fine_grained_entities.append(mention_dict)
             mention_count += 1
         
