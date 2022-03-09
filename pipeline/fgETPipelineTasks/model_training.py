@@ -153,7 +153,7 @@ def model_training():
             arranged_results['mention'] = mention
             arranged_results['gold'] = gold_labels
             arranged_results['predictions'] = pred_labels
-            arranged_results['scores'] = score
+            arranged_results['scores'] = [score[i]for i, l in enumerate(pred) if l]
             collated_results['results'].append(arranged_results)
 
     dataset = Dataset.create(
@@ -231,7 +231,6 @@ def run_training(train_loader,validation_loader,model,optimizer,epochs,logger,st
                 progress.update(1)
 
                 preds,scores = model.predict(elmos, men_masks, ctx_masks, dists, gathers)
-                print(scores.tolist())
                 results['gold'].extend(labels.int().data.tolist())
                 results['pred'].extend(preds.int().data.tolist())
                 results['ids'].extend(men_ids)
@@ -298,7 +297,7 @@ def run_test(test_loader,model,logger,best_scores):
             preds,scores = model.predict(elmos, men_masks, ctx_masks, dists, gathers)
             results['gold'].extend(labels.int().data.tolist())
             results['pred'].extend(preds.int().data.tolist())
-            results['scores'].extend(scores.int().data.tolist())
+            results['scores'].extend(scores.tolist())
             results['ids'].extend(men_ids)
             results['mentions'].extend(mentions)
 
