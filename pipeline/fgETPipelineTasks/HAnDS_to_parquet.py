@@ -28,6 +28,7 @@ def HAnDS_to_parquet():
     args = {"project":PROJECT_NAME,"source_dataset":DATASET_PARTIAL_NAME,"dataset_project":DATASET_PROJECT, "dataset_name":DATASET_NAME}
     task.connect(args)
     # task.execute_remotely()
+    logger = task.get_logger()
 
     # get uploaded dataset
     dataset_dict = Dataset.list_datasets(
@@ -46,17 +47,127 @@ def HAnDS_to_parquet():
 
     files = dataset_obj.list_files()
 
-    print(files[:10])
+    print("First 10 files in {} folder: ".format(args['source_dataset']) ,files[:10])
 
-    # data_src_path = folder + "/" + file
+    dataset = Dataset.create(
+            dataset_project=args['dataset_project'], dataset_name=args['dataset_name']
+    )
 
-    # dataset = Dataset.create(
-    #         dataset_project=args['dataset_project'], dataset_name=args['dataset_name']
-    # )
+    data_rows = []
+
+    for file in files:
+
+        data_src_path = folder + "/" + file
+
+        file_i = gzip.GzipFile(data_src_path, 'r')
+        sentences = list(filter(None, file_i.read().split(b'\n')))
+
+        count = 0
+        for row in sentences:
+            json_data = json.loads(row.decode('utf-8'))
+            json_data['sid'] = count
+            count += 1
+            data_rows.append(json_data)
+
+    print("Total number of data rows extracted from files: ",len(data_rows))
+
+    formatted_data ={"TRAINING": []}
+    for row in data_rows:
+        new_row = dict()
+        new_row['source'] = str(row['sid'])
+        sentence = ' '.join(row['tokens'])
+        new_row['text'] = sentence
+        new_row['tokens'] = row['tokens']
+        new_row['labels'] = []
+        fine_grained_entities = []
+        mention_count = 0
+        for mention in row['links']:
+            mention_dict = dict()
+            mention_dict['labels'] = mention['labels']
+            new_row['labels'].extend(mention['labels'])
+            mention_dict['start'] = mention['start']
+            mention_dict['end'] = mention['end']
+            mention_dict['mention'] = mention['name']
+            mention_dict['mention_id'] = new_row['source'] + '-' + str(mention_count)
+            fine_grained_entities.append(mention_dict)
+            mention_count += 1
+        
+        new_row['fine_grained_entities'] = fine_grained_entities
+        print(new_row)
+        formatted_data['TRAINING'].append(new_row)
+
+    training_data = formatted_data['TRAINING']
+
+    training_records = {}
+
+    for i in range(0,len(training_data)):
+        training_records[str(i)] = training_data[i]
+
+    json_object = json.dumps(training_records, indent = 4)
+    df = pd.read_json(StringIO(json_object), orient ='index')
+    print("All data rows dataframe: ",df.head())
+    logger.report_table(title='Data rows extracted',series='pandas DataFrame',iteration=0,table_plot=df)
+
+    # train, val, test split of dataframe
+    train,val,test = np.split(df.sample(frac=1, random_state=42), [int(0.6*len(df)), int(0.8*len(df))])
+
+    train.reset_index(drop=True,inplace=True)
+    val.reset_index(drop=True,inplace=True)
+    test.reset_index(drop=True,inplace=True)
+
+    print("train df:", train)
+    print("val df:", val)
+    print("test df:", test)
+
+    #train df json
+    train_dict = {'TRAINING': []}
+
+    for source in train['source'].tolist():
+        train_dict['TRAINING'].append({'source':df.loc[df['source'] == source].iloc[0]['source'],'text':df.loc[df['source'] == source].iloc[0]['text'],'tokens':df.loc[df['source'] == source].iloc[0]['tokens'],'fine_grained_entities':df.loc[df['source'] == source].iloc[0]['fine_grained_entities']})
+
+    with codecs.open(os.path.join(gettempdir(), 'train.json'), mode='w', encoding='utf-8',
+                errors='ignore') as fp:
+        json.dump(train_dict, fp=fp, ensure_ascii=False, indent = 4)
+
+    dataset.add_files(os.path.join(gettempdir(), 'train.json'))
+
+    #val df json
+    val_dict = {'VALIDATION': []}
+
+    for source in val['source'].tolist():
+        val_dict['VALIDATION'].append({'source':df.loc[df['source'] == source].iloc[0]['source'],'text':df.loc[df['source'] == source].iloc[0]['text'],'tokens':df.loc[df['source'] == source].iloc[0]['tokens'],'fine_grained_entities':df.loc[df['source'] == source].iloc[0]['fine_grained_entities']})
+
+    with codecs.open(os.path.join(gettempdir(), 'validation.json'), mode='w', encoding='utf-8',
+                errors='ignore') as fp:
+        json.dump(val_dict, fp=fp, ensure_ascii=False, indent = 4)
+
+    dataset.add_files(os.path.join(gettempdir(), 'validation.json'))
+
+    #test df json
+    test_dict = {'TEST': []}
+
+    for source in test['source'].tolist():
+        test_dict['TEST'].append({'source':df.loc[df['source'] == source].iloc[0]['source'],'text':df.loc[df['source'] == source].iloc[0]['text'],'tokens':df.loc[df['source'] == source].iloc[0]['tokens'],'fine_grained_entities':df.loc[df['source'] == source].iloc[0]['fine_grained_entities']})
+
+    with codecs.open(os.path.join(gettempdir(), 'test.json'), mode='w', encoding='utf-8',
+                errors='ignore') as fp:
+        json.dump(test_dict, fp=fp, ensure_ascii=False, indent = 4)
+
+    dataset.add_files(os.path.join(gettempdir(), 'test.json'))
+
+    #convert dataframes to parquet
+    df.to_parquet(os.path.join(gettempdir(), 'full_HAnDS.parquet'),engine='fastparquet')
+    train.to_parquet(os.path.join(gettempdir(), 'train.parquet'),engine='fastparquet')
+    val.to_parquet(os.path.join(gettempdir(), 'validation.parquet'),engine='fastparquet')
+    test.to_parquet(os.path.join(gettempdir(), 'test.parquet'),engine='fastparquet')
+
+    dataset.add_files(os.path.join(gettempdir(), 'full_HAnDS.parquet'))
+    dataset.add_files(os.path.join(gettempdir(), 'train.parquet'))
+    dataset.add_files(os.path.join(gettempdir(), 'validation.parquet'))
+    dataset.add_files(os.path.join(gettempdir(), 'test.parquet'))
+
+    dataset.upload(output_url='s3://experiment-logging/multimodal')
     
-    # data = []
-    # for line in open(data_src_path, 'r'):
-    #     data.append(json.loads(line))
 
 if __name__ == '__main__':
     HAnDS_to_parquet()
