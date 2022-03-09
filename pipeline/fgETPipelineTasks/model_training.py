@@ -244,13 +244,15 @@ def run_training(train_loader,validation_loader,model,optimizer,epochs,logger,st
 
         avg_val_loss = sum(val_loss)/len(val_loss)
         if logger is not None:
-            logger.report_scalar(title='Validation',series='Loss', value=avg_val_loss,iteration=epoch)
+            logger.report_scalar(title='Validation Loss',series='Loss', value=avg_val_loss,iteration=epoch)
 
         metrics = calculate_metrics(results['gold'], results['pred'])
         print('---------- Validation set ----------')
         print('Strict accuracy: {:.2f}'.format(metrics.accuracy))
         if logger is not None:
-            logger.report_scalar(title='Validation',series='Accuracy', value=metrics.accuracy,iteration=epoch)
+            logger.report_scalar(title='Validation Accuracy',series='Accuracy', value=metrics.accuracy,iteration=epoch)
+            logger.report_scalar(title='Validation Accuracy',series='Macro Fscore', value=metrics.macro_fscore,iteration=epoch)
+            logger.report_scalar(title='Validation Accuracy',series='Micro Fscore', value=metrics.micro_fscore,iteration=epoch)
         print('Macro: P: {:.2f}, R: {:.2f}, F:{:.2f}'.format(
             metrics.macro_prec,
             metrics.macro_rec,
