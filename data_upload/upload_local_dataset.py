@@ -44,8 +44,8 @@ def main():
     # )
     # dataset.finalize()
 
-    # task = Task.init(project_name="ontonotes", task_name="delete dataset")
-    # Dataset.delete(dataset_id='e0249d965ad14b08901cd235e32b311e')
+    task = Task.init(project_name="ontonotes", task_name="delete dataset")
+    Dataset.delete(dataset_id='c25f6bf13dea475aa15d01cb5f1bb503')
 
     # raw unzipped ontonotes v5.0 files
     # task = Task.init(project_name="ontonotes", task_name="upload raw data")
@@ -66,13 +66,13 @@ def main():
     # dataset.finalize()
 
     # Manually annotated Fine-grained Entity Recognition corpus with 117 entity types annotated
-    task = Task.init(project_name="multimodal", task_name="upload HAnDS data")
-    dataset = Dataset.create(
-            dataset_project="datasets/multimodal", dataset_name="HAnDS data"
-        )
-    dataset.add_files("data/HAnDS_figer_types_stage_one_state_two_sentences_stage_three_pp")
-    dataset.upload(output_url='s3://experiment-logging/multimodal')
-    dataset.finalize()
+    # task = Task.init(project_name="multimodal", task_name="upload HAnDS data")
+    # dataset = Dataset.create(
+    #         dataset_project="datasets/multimodal", dataset_name="HAnDS data"
+    #     )
+    # dataset.add_files("data/HAnDS_figer_types_stage_one_state_two_sentences_stage_three_pp")
+    # dataset.upload(output_url='s3://experiment-logging/multimodal')
+    # dataset.finalize()
 
 
 if __name__ == '__main__':

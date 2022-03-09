@@ -231,6 +231,7 @@ def run_training(train_loader,validation_loader,model,optimizer,epochs,logger,st
                 progress.update(1)
 
                 preds,scores = model.predict(elmos, men_masks, ctx_masks, dists, gathers)
+                print(scores.tolist())
                 results['gold'].extend(labels.int().data.tolist())
                 results['pred'].extend(preds.int().data.tolist())
                 results['ids'].extend(men_ids)
