@@ -27,7 +27,7 @@ def HAnDS_to_parquet():
     task.set_base_docker("nvidia/cuda:11.4.0-cudnn8-devel-ubuntu20.04")
     args = {"project":PROJECT_NAME,"source_dataset":DATASET_PARTIAL_NAME,"dataset_project":DATASET_PROJECT, "dataset_name":DATASET_NAME}
     task.connect(args)
-    # task.execute_remotely()
+    task.execute_remotely()
     logger = task.get_logger()
 
     # get uploaded dataset
@@ -58,6 +58,8 @@ def HAnDS_to_parquet():
     for file in files:
 
         data_src_path = folder + "/" + file
+
+        print("Processing {}".format(data_src_path))
 
         file_i = gzip.GzipFile(data_src_path, 'r')
         sentences = list(filter(None, file_i.read().split(b'\n')))
