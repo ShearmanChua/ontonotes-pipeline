@@ -54,6 +54,7 @@ def HAnDS_to_parquet():
     )
 
     data_rows = []
+    count = 0
 
     for file in files:
 
@@ -63,8 +64,7 @@ def HAnDS_to_parquet():
 
         file_i = gzip.GzipFile(data_src_path, 'r')
         sentences = list(filter(None, file_i.read().split(b'\n')))
-
-        count = 0
+        
         for row in sentences:
             json_data = json.loads(row.decode('utf-8'))
             json_data['sid'] = count
