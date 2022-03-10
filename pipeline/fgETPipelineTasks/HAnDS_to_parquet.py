@@ -139,8 +139,8 @@ def upload_data_shard(data_rows,dataset,logger,data_shard):
     train_dict = {'TRAINING': []}
 
     for source in train['source'].tolist():
-        train_dict['TRAINING'].append({'source':df.loc[df['source'] == source].iloc[0]['source'],'text':df.loc[df['source'] == source].iloc[0]['text'],'tokens':df.loc[df['source'] == source].iloc[0]['tokens'],'fine_grained_entities':df.loc[df['source'] == source].iloc[0]['fine_grained_entities']})
-
+        train_dict['TRAINING'].append({'source':int(df.loc[df['source'] == source].iloc[0]['source']),'text':df.loc[df['source'] == source].iloc[0]['text'],'tokens':df.loc[df['source'] == source].iloc[0]['tokens'],'fine_grained_entities':df.loc[df['source'] == source].iloc[0]['fine_grained_entities']})
+    
     with codecs.open(os.path.join(gettempdir(), 'train_{}.json'.format(str(data_shard))), mode='w', encoding='utf-8',
                 errors='ignore') as fp:
         json.dump(train_dict, fp=fp, ensure_ascii=False, indent = 4)
@@ -151,7 +151,7 @@ def upload_data_shard(data_rows,dataset,logger,data_shard):
     val_dict = {'VALIDATION': []}
 
     for source in val['source'].tolist():
-        val_dict['VALIDATION'].append({'source':df.loc[df['source'] == source].iloc[0]['source'],'text':df.loc[df['source'] == source].iloc[0]['text'],'tokens':df.loc[df['source'] == source].iloc[0]['tokens'],'fine_grained_entities':df.loc[df['source'] == source].iloc[0]['fine_grained_entities']})
+        val_dict['VALIDATION'].append({'source':int(df.loc[df['source'] == source].iloc[0]['source']),'text':df.loc[df['source'] == source].iloc[0]['text'],'tokens':df.loc[df['source'] == source].iloc[0]['tokens'],'fine_grained_entities':df.loc[df['source'] == source].iloc[0]['fine_grained_entities']})
 
     with codecs.open(os.path.join(gettempdir(), 'validation_{}.json'.format(str(data_shard))), mode='w', encoding='utf-8',
                 errors='ignore') as fp:
@@ -163,7 +163,7 @@ def upload_data_shard(data_rows,dataset,logger,data_shard):
     test_dict = {'TEST': []}
 
     for source in test['source'].tolist():
-        test_dict['TEST'].append({'source':df.loc[df['source'] == source].iloc[0]['source'],'text':df.loc[df['source'] == source].iloc[0]['text'],'tokens':df.loc[df['source'] == source].iloc[0]['tokens'],'fine_grained_entities':df.loc[df['source'] == source].iloc[0]['fine_grained_entities']})
+        test_dict['TEST'].append({'source':int(df.loc[df['source'] == source].iloc[0]['source']),'text':df.loc[df['source'] == source].iloc[0]['text'],'tokens':df.loc[df['source'] == source].iloc[0]['tokens'],'fine_grained_entities':df.loc[df['source'] == source].iloc[0]['fine_grained_entities']})
 
     with codecs.open(os.path.join(gettempdir(), 'test_{}.json'.format(str(data_shard))), mode='w', encoding='utf-8',
                 errors='ignore') as fp:
