@@ -73,13 +73,13 @@ def HAnDS_to_parquet():
             data_rows.append(json_data)
             if count%100000 == 0:
                 print("Uploading data shard{}".format(str(data_shard)))
-                upload_data_shard(data_rows,dataset)
+                upload_data_shard(data_rows,dataset,logger,data_shard)
                 data_rows = []
                 data_shard += 1
 
     if count%100000 != 0:
         print("Uploading data shard{}".format(str(data_shard)))
-        upload_data_shard(data_rows,dataset)
+        upload_data_shard(data_rows,dataset,logger,data_shard)
         data_rows = []
         data_shard += 1
 
