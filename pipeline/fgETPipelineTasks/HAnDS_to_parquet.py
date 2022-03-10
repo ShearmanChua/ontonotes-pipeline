@@ -71,10 +71,17 @@ def HAnDS_to_parquet():
             json_data['sid'] = count
             count += 1
             data_rows.append(json_data)
-            if count%100000:
+            if count%100000 == 0:
+                print("Uploading data shard{}".format(str(data_shard)))
                 upload_data_shard(data_rows,dataset)
                 data_rows = []
                 data_shard += 1
+
+    if count%100000 != 0:
+        print("Uploading data shard{}".format(str(data_shard)))
+        upload_data_shard(data_rows,dataset)
+        data_rows = []
+        data_shard += 1
 
     print("Total number of data rows extracted from files: ",count)
 
