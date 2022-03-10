@@ -55,6 +55,7 @@ def HAnDS_to_parquet():
 
     data_rows = []
     count = 0
+    data_shard = 0
 
     for file in files:
 
@@ -70,8 +71,14 @@ def HAnDS_to_parquet():
             json_data['sid'] = count
             count += 1
             data_rows.append(json_data)
+            if count%100000:
+                upload_data_shard(data_rows,dataset)
+                data_rows = []
+                data_shard += 1
 
-    print("Total number of data rows extracted from files: ",len(data_rows))
+    print("Total number of data rows extracted from files: ",count)
+
+def upload_data_shard(data_rows,dataset,logger,data_shard):
 
     formatted_data ={"TRAINING": []}
     for row in data_rows:
@@ -95,7 +102,7 @@ def HAnDS_to_parquet():
             mention_count += 1
         
         new_row['fine_grained_entities'] = fine_grained_entities
-        print(new_row)
+        # print(new_row)
         formatted_data['TRAINING'].append(new_row)
 
     training_data = formatted_data['TRAINING']
@@ -108,7 +115,7 @@ def HAnDS_to_parquet():
     json_object = json.dumps(training_records, indent = 4)
     df = pd.read_json(StringIO(json_object), orient ='index')
     print("All data rows dataframe: ",df.head())
-    logger.report_table(title='Data rows extracted',series='pandas DataFrame',iteration=0,table_plot=df)
+    logger.report_table(title='Data rows extracted',series='Data shard{}'.format(str(data_shard)),iteration=0,table_plot=df)
 
     # train, val, test split of dataframe
     train,val,test = np.split(df.sample(frac=1, random_state=42), [int(0.6*len(df)), int(0.8*len(df))])
@@ -127,11 +134,11 @@ def HAnDS_to_parquet():
     for source in train['source'].tolist():
         train_dict['TRAINING'].append({'source':df.loc[df['source'] == source].iloc[0]['source'],'text':df.loc[df['source'] == source].iloc[0]['text'],'tokens':df.loc[df['source'] == source].iloc[0]['tokens'],'fine_grained_entities':df.loc[df['source'] == source].iloc[0]['fine_grained_entities']})
 
-    with codecs.open(os.path.join(gettempdir(), 'train.json'), mode='w', encoding='utf-8',
+    with codecs.open(os.path.join(gettempdir(), 'train_{}.json'.format(str(data_shard))), mode='w', encoding='utf-8',
                 errors='ignore') as fp:
         json.dump(train_dict, fp=fp, ensure_ascii=False, indent = 4)
 
-    dataset.add_files(os.path.join(gettempdir(), 'train.json'))
+    dataset.add_files(os.path.join(gettempdir(), 'train_{}.json'.format(str(data_shard))))
 
     #val df json
     val_dict = {'VALIDATION': []}
@@ -139,11 +146,11 @@ def HAnDS_to_parquet():
     for source in val['source'].tolist():
         val_dict['VALIDATION'].append({'source':df.loc[df['source'] == source].iloc[0]['source'],'text':df.loc[df['source'] == source].iloc[0]['text'],'tokens':df.loc[df['source'] == source].iloc[0]['tokens'],'fine_grained_entities':df.loc[df['source'] == source].iloc[0]['fine_grained_entities']})
 
-    with codecs.open(os.path.join(gettempdir(), 'validation.json'), mode='w', encoding='utf-8',
+    with codecs.open(os.path.join(gettempdir(), 'validation_{}.json'.format(str(data_shard))), mode='w', encoding='utf-8',
                 errors='ignore') as fp:
         json.dump(val_dict, fp=fp, ensure_ascii=False, indent = 4)
 
-    dataset.add_files(os.path.join(gettempdir(), 'validation.json'))
+    dataset.add_files(os.path.join(gettempdir(), 'validation_{}.json'.format(str(data_shard))))
 
     #test df json
     test_dict = {'TEST': []}
@@ -151,22 +158,22 @@ def HAnDS_to_parquet():
     for source in test['source'].tolist():
         test_dict['TEST'].append({'source':df.loc[df['source'] == source].iloc[0]['source'],'text':df.loc[df['source'] == source].iloc[0]['text'],'tokens':df.loc[df['source'] == source].iloc[0]['tokens'],'fine_grained_entities':df.loc[df['source'] == source].iloc[0]['fine_grained_entities']})
 
-    with codecs.open(os.path.join(gettempdir(), 'test.json'), mode='w', encoding='utf-8',
+    with codecs.open(os.path.join(gettempdir(), 'test_{}.json'.format(str(data_shard))), mode='w', encoding='utf-8',
                 errors='ignore') as fp:
         json.dump(test_dict, fp=fp, ensure_ascii=False, indent = 4)
 
-    dataset.add_files(os.path.join(gettempdir(), 'test.json'))
+    dataset.add_files(os.path.join(gettempdir(), 'test_{}.json'.format(str(data_shard))))
 
     #convert dataframes to parquet
-    df.to_parquet(os.path.join(gettempdir(), 'full_HAnDS.parquet'),engine='fastparquet')
-    train.to_parquet(os.path.join(gettempdir(), 'train.parquet'),engine='fastparquet')
-    val.to_parquet(os.path.join(gettempdir(), 'validation.parquet'),engine='fastparquet')
-    test.to_parquet(os.path.join(gettempdir(), 'test.parquet'),engine='fastparquet')
+    df.to_parquet(os.path.join(gettempdir(), 'HAnDS_{}.parquet'.format(str(data_shard))),engine='fastparquet')
+    train.to_parquet(os.path.join(gettempdir(), 'train_{}.parquet'.format(str(data_shard))),engine='fastparquet')
+    val.to_parquet(os.path.join(gettempdir(), 'validation_{}.parquet'.format(str(data_shard))),engine='fastparquet')
+    test.to_parquet(os.path.join(gettempdir(), 'test_{}.parquet'.format(str(data_shard))),engine='fastparquet')
 
-    dataset.add_files(os.path.join(gettempdir(), 'full_HAnDS.parquet'))
-    dataset.add_files(os.path.join(gettempdir(), 'train.parquet'))
-    dataset.add_files(os.path.join(gettempdir(), 'validation.parquet'))
-    dataset.add_files(os.path.join(gettempdir(), 'test.parquet'))
+    dataset.add_files(os.path.join(gettempdir(), 'HAnDS_{}.parquet'.format(str(data_shard))))
+    dataset.add_files(os.path.join(gettempdir(), 'train_{}.parquet'.format(str(data_shard))))
+    dataset.add_files(os.path.join(gettempdir(), 'validation_{}.parquet'.format(str(data_shard))))
+    dataset.add_files(os.path.join(gettempdir(), 'test_{}.parquet'.format(str(data_shard))))
 
     dataset.upload(output_url='s3://experiment-logging/multimodal')
     
