@@ -57,6 +57,11 @@ def model_training():
     arg_parser.add_argument('--entities_field', type=str, default='fine_grained_entities')
     arg_parser.add_argument('--results_dataset_project', type=str, default='datasets/multimodal')
     arg_parser.add_argument('--results_dataset_name', type=str, default='fgET results')
+    arg_parser.add_argument('--train_from_checkpoint', type=bool, default=False)
+    arg_parser.add_argument('--model_checkpoint', type=str, default='')
+    arg_parser.add_argument('--model_checkpoint_project', type=str, default='datasets/multimodal')
+    arg_parser.add_argument('--model_checkpoint_dataset_name', type=str, default='fgET results')
+    arg_parser.add_argument('--model_checkpoint_file_name', type=str, default='best_mac.mdl')
 
     args = arg_parser.parse_args()
     task.connect(vars(args),name='General')
@@ -129,8 +134,16 @@ def model_training():
     total_step = args.max_epoch * len(train_loader)
     optimizer = model.configure_optimizers(args.weight_decay,args.lr,total_step)
 
+    if args.train_from_checkpoint:
+
+        model_file_path = get_clearml_file_path(args.model_checkpoint_project,args.model_checkpoint_dataset_name,args.model_checkpoint_file_name)
+        checkpoint = torch.load(model_file_path)
+        model.load_state_dict(checkpoint['model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
     state = {
         'model': model.state_dict(),
+        'optimizer': optimizer.state_dict(),
         'args': vars(args),
         'vocab': {'label': labels_strtoidx}
     }
@@ -156,9 +169,11 @@ def model_training():
             arranged_results['scores'] = [score[i]for i, l in enumerate(pred) if l]
             collated_results['results'].append(arranged_results)
 
-    dataset = Dataset.create(
-        dataset_project=args.results_dataset_project, dataset_name=args.results_dataset_name
-    )
+    # dataset = Dataset.create(
+    #     dataset_project=args.results_dataset_project, dataset_name=args.results_dataset_name
+    # )
+
+    dataset = create_dataset(args.results_dataset_project,args.results_dataset_name)
 
     if args.test:
         with codecs.open(os.path.join(gettempdir(), 'results.json'), mode='w', encoding='utf-8',
@@ -267,10 +282,14 @@ def run_training(train_loader,validation_loader,model,optimizer,epochs,logger,st
         if metrics.macro_fscore > best_scores['best_mac_val']:
             best_scores['best_mac_val'] = metrics.macro_fscore
             print('Saving new best macro F1 model')
+            state['model']= model.state_dict()
+            state['optimizer']= optimizer.state_dict()
             torch.save(state, os.path.join(gettempdir(), 'best_mac.mdl'))
         if metrics.micro_fscore > best_scores['best_mic_val']:
             best_scores['best_mic_val'] = metrics.micro_fscore
             print('Saving new best micro F1 model')
+            state['model']= model.state_dict()
+            state['optimizer']= optimizer.state_dict()
             torch.save(state, os.path.join(gettempdir(), 'best_mic.mdl'))
 
         progress.close()
@@ -347,6 +366,30 @@ def get_clearml_file_path(dataset_project,dataset_name,file_name):
     file_path = folder + "/" + file
 
     return file_path
+
+
+def create_dataset(dataset_project, dataset_name):
+    parent_dataset = _get_last_child_dataset(dataset_project, dataset_name)
+    if parent_dataset:
+        print("create child")
+        parent_dataset.finalize()
+        child_dataset = Dataset.create(
+            dataset_name, dataset_project, parent_datasets=[parent_dataset]
+        )
+        return child_dataset
+    else:
+        print("create parent")
+        dataset = Dataset.create(dataset_name, dataset_project)
+        return dataset
+
+
+def _get_last_child_dataset(dataset_project, dataset_name):
+    datasets_dict = Dataset.list_datasets(
+        dataset_project=dataset_project, partial_name=dataset_name, only_completed=False
+    )
+    if datasets_dict:
+        datasets_dict_latest = datasets_dict[-1]
+        return Dataset.get(dataset_id=datasets_dict_latest["id"])
 
 
 if __name__ == '__main__':
