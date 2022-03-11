@@ -79,24 +79,25 @@ def HAnDS_1mil():
     print("val df:", val_df)
     print("test df:", test_df)
 
-    train_df.drop(train_df[train_df["fine_grained_entities"].str.len() == 0].index, inplace=True)
-    val_df.drop(val_df[val_df["fine_grained_entities"].str.len() == 0].index, inplace=True)
-    test_df.drop(test_df[test_df["fine_grained_entities"].str.len() == 0].index, inplace=True)
+    train_df = train_df[~train_df.fine_grained_entities.str.len().eq(0)]
+    val_df = val_df[~val_df.fine_grained_entities.str.len().eq(0)]
+    test_df = test_df[~test_df.fine_grained_entities.str.len().eq(0)]
+    
 
     print("new train df:", train_df)
     print("new val df:", val_df)
     print("new test df:", test_df)
 
-    train_df.to_parquet(os.path.join(gettempdir(), 'train.parquet'),engine='fastparquet')
-    val_df.to_parquet(os.path.join(gettempdir(), 'validation.parquet'),engine='fastparquet')
-    test_df.to_parquet(os.path.join(gettempdir(), 'test.parquet'),engine='fastparquet')
+    # train_df.to_parquet(os.path.join(gettempdir(), 'train.parquet'),engine='fastparquet')
+    # val_df.to_parquet(os.path.join(gettempdir(), 'validation.parquet'),engine='fastparquet')
+    # test_df.to_parquet(os.path.join(gettempdir(), 'test.parquet'),engine='fastparquet')
 
-    dataset.add_files(os.path.join(gettempdir(), 'train.parquet'))
-    dataset.add_files(os.path.join(gettempdir(), 'validation.parquet'))
-    dataset.add_files(os.path.join(gettempdir(), 'test.parquet'))
+    # dataset.add_files(os.path.join(gettempdir(), 'train.parquet'))
+    # dataset.add_files(os.path.join(gettempdir(), 'validation.parquet'))
+    # dataset.add_files(os.path.join(gettempdir(), 'test.parquet'))
 
-    dataset.upload(output_url='s3://experiment-logging/multimodal')
-    dataset.finalize()
+    # dataset.upload(output_url='s3://experiment-logging/multimodal')
+    # dataset.finalize()
 
 if __name__ == '__main__':
     HAnDS_1mil()
