@@ -17,7 +17,7 @@ def HAnDS_1mil():
     TASK_NAME = "HAnDS_dataset_generate_1mil"
     DATASET_PROJECT = "datasets/multimodal"
     DATASET_PARTIAL_NAME = "fgET HAnDS data"
-    DATASET_NAME = "fgET HAnDS removed empty entities"
+    DATASET_NAME = "fgET_HAnDS_removed_empty_entities"
 
     # Task.add_requirements("-rrequirements.txt")
     Task.force_requirements_env_freeze(force=True, requirements_file='requirements.txt')
@@ -96,6 +96,7 @@ def HAnDS_1mil():
     dataset.add_files(os.path.join(gettempdir(), 'test.parquet'))
 
     dataset.upload(output_url='s3://experiment-logging/multimodal')
+    dataset.finalize()
 
 if __name__ == '__main__':
     HAnDS_1mil()
