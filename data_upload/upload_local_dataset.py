@@ -74,7 +74,7 @@ def main():
     # dataset.upload(output_url='s3://experiment-logging/multimodal')
     # dataset.finalize()
 
-    parent_dataset = _get_last_child_dataset("datasets/multimodal", "fgET HAnDS data")
+    parent_dataset = _get_last_child_dataset("datasets/multimodal", "fgET HAnDS 1mil")
     parent_dataset.finalize()
 
 
