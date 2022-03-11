@@ -60,8 +60,8 @@ def HAnDS_1mil():
     )
 
     train_df = pd.read_parquet(folder + "/" + 'train_0.parquet', engine='fastparquet')
-    val_df = pd.read_parquet(folder + "/" + 'train_0.parquet', engine='fastparquet')
-    test_df = pd.read_parquet(folder + "/" + 'train_0.parquet', engine='fastparquet')
+    val_df = pd.read_parquet(folder + "/" + 'validation_0.parquet', engine='fastparquet')
+    test_df = pd.read_parquet(folder + "/" + 'test_0.parquet', engine='fastparquet')
 
     for i in range(1,10):
         train_append = pd.read_parquet(folder + "/" + 'train_{}.parquet'.format(str(i)), engine='fastparquet')
