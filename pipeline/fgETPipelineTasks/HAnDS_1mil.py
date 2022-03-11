@@ -88,16 +88,16 @@ def HAnDS_1mil():
     print("new val df:", val_df)
     print("new test df:", test_df)
 
-    # train_df.to_parquet(os.path.join(gettempdir(), 'train.parquet'),engine='fastparquet')
-    # val_df.to_parquet(os.path.join(gettempdir(), 'validation.parquet'),engine='fastparquet')
-    # test_df.to_parquet(os.path.join(gettempdir(), 'test.parquet'),engine='fastparquet')
+    train_df.to_parquet(os.path.join(gettempdir(), 'train.parquet'),engine='fastparquet')
+    val_df.to_parquet(os.path.join(gettempdir(), 'validation.parquet'),engine='fastparquet')
+    test_df.to_parquet(os.path.join(gettempdir(), 'test.parquet'),engine='fastparquet')
 
-    # dataset.add_files(os.path.join(gettempdir(), 'train.parquet'))
-    # dataset.add_files(os.path.join(gettempdir(), 'validation.parquet'))
-    # dataset.add_files(os.path.join(gettempdir(), 'test.parquet'))
+    dataset.add_files(os.path.join(gettempdir(), 'train.parquet'))
+    dataset.add_files(os.path.join(gettempdir(), 'validation.parquet'))
+    dataset.add_files(os.path.join(gettempdir(), 'test.parquet'))
 
-    # dataset.upload(output_url='s3://experiment-logging/multimodal')
-    # dataset.finalize()
+    dataset.upload(output_url='s3://experiment-logging/multimodal')
+    dataset.finalize()
 
 if __name__ == '__main__':
     HAnDS_1mil()
