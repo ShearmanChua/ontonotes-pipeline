@@ -17,7 +17,7 @@ def HAnDS_1mil():
     TASK_NAME = "HAnDS_dataset_generate_1mil"
     DATASET_PROJECT = "datasets/multimodal"
     DATASET_PARTIAL_NAME = "fgET HAnDS data"
-    DATASET_NAME = "fgET HAnDS 1mil"
+    DATASET_NAME = "fgET HAnDS removed empty entities"
 
     # Task.add_requirements("-rrequirements.txt")
     Task.force_requirements_env_freeze(force=True, requirements_file='requirements.txt')
@@ -49,10 +49,14 @@ def HAnDS_1mil():
 
     print("First 10 files in {} folder: ".format(args['source_dataset']) ,files[:10])
 
-    files_required = ['train_0.parquet','train_1.parquet','train_2.parquet','train_3.parquet','train_4.parquet','train_5.parquet','train_6.parquet','train_7.parquet','train_8.parquet','train_9.parquet']
-    files_required.extend(['validation_0.parquet','validation_1.parquet','validation_2.parquet','validation_3.parquet','validation_4.parquet','validation_5.parquet','validation_6.parquet','validation_7.parquet','validation_8.parquet','validation_9.parquet'])
-    files_required.extend(['test_0.parquet','test_1.parquet','test_2.parquet','test_3.parquet','test_4.parquet','test_5.parquet','test_6.parquet','test_7.parquet','test_8.parquet','test_9.parquet'])
+    files_required = []
+    
 
+    for i in range(0,20):
+        files_required.append('train_{}.parquet'.format(str(i)))
+        files_required.append('validation_{}.parquet'.format(str(i)))
+        files_required.append('test_{}.parquet'.format(str(i)))
+    
     files = [file for file in dataset_obj.list_files() if file in files_required]
 
     dataset = Dataset.create(
@@ -63,7 +67,7 @@ def HAnDS_1mil():
     val_df = pd.read_parquet(folder + "/" + 'validation_0.parquet', engine='fastparquet')
     test_df = pd.read_parquet(folder + "/" + 'test_0.parquet', engine='fastparquet')
 
-    for i in range(1,10):
+    for i in range(1,20):
         train_append = pd.read_parquet(folder + "/" + 'train_{}.parquet'.format(str(i)), engine='fastparquet')
         val_append = pd.read_parquet(folder + "/" + 'validation_{}.parquet'.format(str(i)), engine='fastparquet')
         test_append = pd.read_parquet(folder + "/" + 'test_{}.parquet'.format(str(i)), engine='fastparquet')
@@ -74,6 +78,14 @@ def HAnDS_1mil():
     print("train df:", train_df)
     print("val df:", val_df)
     print("test df:", test_df)
+
+    train_df.drop(train_df[train_df.fine_grained_entities == []].index, inplace=True)
+    val_df.drop(val_df[val_df.fine_grained_entities == []].index, inplace=True)
+    test_df.drop(test_df[test_df.fine_grained_entities == []].index, inplace=True)
+
+    print("new train df:", train_df)
+    print("new val df:", val_df)
+    print("new test df:", test_df)
 
     train_df.to_parquet(os.path.join(gettempdir(), 'train.parquet'),engine='fastparquet')
     val_df.to_parquet(os.path.join(gettempdir(), 'validation.parquet'),engine='fastparquet')
