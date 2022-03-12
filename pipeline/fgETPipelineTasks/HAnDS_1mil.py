@@ -115,6 +115,10 @@ def HAnDS_1mil():
         instance = process_instance(record_dict,label_stoi)
         test_instances.append(instance)
     test_df['instance'] = test_instances
+
+    train_df['instance'] = train_df['instance'].astype('str') 
+    val_df['instance'] = val_df['instance'].astype('str') 
+    test_df['instance'] = test_df['instance'].astype('str') 
     
     print("new train df:", train_df)
     print("new val df:", val_df)
