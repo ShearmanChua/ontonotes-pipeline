@@ -80,7 +80,7 @@ def model_training():
 
     timestamp = time.strftime('%Y%m%d_%H%M%S', time.localtime())
     results_dataset_name = args.results_dataset_name + ' ' + timestamp
-    num_worker = 4 * 1
+    # num_worker = 4 * 1
 
     print("Loading labels dictionary from clearML {} dataset from file {}".format(args.labels_dataset_name,args.labels_file_name))
     labels_file_path = get_clearml_file_path(args.labels_dataset_project,args.labels_dataset_name,args.labels_file_name)
@@ -104,12 +104,12 @@ def model_training():
     test_file_path = get_clearml_file_path(args.fgETdata_dataset_project,args.fgETdata_dataset_name,args.test_file_name)
 
     train_set = FetDataset(train_file_path,args.tokens_field,args.entities_field,labels_strtoidx,args.gpu)
-    train_loader = DataLoader(train_set, batch_size=args.batch_size, shuffle=False,collate_fn=train_set.batch_process,num_workers=num_worker)
+    train_loader = DataLoader(train_set, batch_size=args.batch_size, shuffle=False,collate_fn=train_set.batch_process)
     val_set = FetDataset(val_file_path,args.tokens_field,args.entities_field,labels_strtoidx,args.gpu)
-    val_loader = DataLoader(val_set, batch_size=args.batch_size, shuffle=False,collate_fn=val_set.batch_process,num_workers=num_worker)
+    val_loader = DataLoader(val_set, batch_size=args.batch_size, shuffle=False,collate_fn=val_set.batch_process)
     if args.test:
         test_set = FetDataset(test_file_path,args.tokens_field,args.entities_field,labels_strtoidx,args.gpu)
-        test_loader = DataLoader(test_set, batch_size=args.batch_size, shuffle=False,collate_fn=test_set.batch_process,num_workers=num_worker)
+        test_loader = DataLoader(test_set, batch_size=args.batch_size, shuffle=False,collate_fn=test_set.batch_process)
 
 
     # Set GPU device
