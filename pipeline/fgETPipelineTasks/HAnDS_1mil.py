@@ -91,9 +91,24 @@ def HAnDS_1mil():
     val_df = val_df.sample(n=20000)
     test_df = test_df.sample(n=20000)
 
-    train_df['instance'] = train_df['fine_grained_entities'].apply(process_instance)
-    val_df['instance'] = val_df['fine_grained_entities'].apply(process_instance)
-    test_df['instance'] = test_df['fine_grained_entities'].apply(process_instance)
+    train_instances = []
+    for index, row in train_df.iterrows():
+        record_dict = {"tokens":row['tokens'],"entities":row['fine_grained_entities']}
+        instance = process_instance(record_dict)
+        train_instances.append(instance)
+    train_df['instance'] = train_instances
+    val_instances = []
+    for index, row in val_df.iterrows():
+        record_dict = {"tokens":row['tokens'],"entities":row['fine_grained_entities']}
+        instance = process_instance(record_dict)
+        val_instances.append(instance)
+    val_df['instance'] = val_instances
+    test_instances = []
+    for index, row in test_df.iterrows():
+        record_dict = {"tokens":row['tokens'],"entities":row['fine_grained_entities']}
+        instance = process_instance(record_dict)
+        test_instances.append(instance)
+    test_df['instance'] = test_instances
     
     print("new train df:", train_df)
     print("new val df:", val_df)
