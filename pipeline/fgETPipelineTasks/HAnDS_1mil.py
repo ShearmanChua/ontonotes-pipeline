@@ -119,6 +119,10 @@ def HAnDS_1mil():
     train_df['instance'] = train_df['instance'].astype('str') 
     val_df['instance'] = val_df['instance'].astype('str') 
     test_df['instance'] = test_df['instance'].astype('str') 
+
+    train_df.reset_index(drop=True,inplace=True)
+    val_df.reset_index(drop=True,inplace=True)
+    test_df.reset_index(drop=True,inplace=True)
     
     print("new train df:", train_df)
     print("new val df:", val_df)
