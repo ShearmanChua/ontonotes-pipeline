@@ -44,8 +44,8 @@ def main():
     # )
     # dataset.finalize()
 
-    # task = Task.init(project_name="ontonotes", task_name="delete dataset")
-    # Dataset.delete(dataset_id='1abf80cd43a7409c90099517086ec644')
+    task = Task.init(project_name="ontonotes", task_name="delete dataset")
+    Dataset.delete(dataset_id='5a8488d274e6483f93553ab14f925998')
 
     # raw unzipped ontonotes v5.0 files
     # task = Task.init(project_name="ontonotes", task_name="upload raw data")
@@ -74,8 +74,8 @@ def main():
     # dataset.upload(output_url='s3://experiment-logging/multimodal')
     # dataset.finalize()
 
-    parent_dataset = _get_last_child_dataset("datasets/multimodal", "fgET HAnDS data")
-    parent_dataset.finalize()
+    # parent_dataset = _get_last_child_dataset("datasets/multimodal", "fgET HAnDS 1mil")
+    # parent_dataset.finalize()
 
 
 if __name__ == '__main__':

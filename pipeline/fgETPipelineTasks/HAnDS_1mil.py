@@ -79,9 +79,10 @@ def HAnDS_1mil():
     print("val df:", val_df)
     print("test df:", test_df)
 
-    train_df.drop(train_df[train_df.fine_grained_entities == []].index, inplace=True)
-    val_df.drop(val_df[val_df.fine_grained_entities == []].index, inplace=True)
-    test_df.drop(test_df[test_df.fine_grained_entities == []].index, inplace=True)
+    train_df = train_df[~train_df.fine_grained_entities.str.len().eq(0)]
+    val_df = val_df[~val_df.fine_grained_entities.str.len().eq(0)]
+    test_df = test_df[~test_df.fine_grained_entities.str.len().eq(0)]
+    
 
     print("new train df:", train_df)
     print("new val df:", val_df)
