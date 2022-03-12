@@ -6,6 +6,7 @@ from torch.utils.data import Dataset
 from allennlp.modules.elmo import batch_to_ids
 import dask.dataframe as dd
 from dask.distributed import Client 
+import pandas as pd
 import ast
 
 DIGIT_PATTERN = re.compile('\d')
@@ -54,13 +55,15 @@ class FetDataset(Dataset):
         self.tokens_field = tokens_field
         self.label_stoi = label_stoi
         self.label_size = len(label_stoi)
-        self.data = dd.read_parquet(training_file_path,engine='fastparquet')
-        self.client = Client()
-        self.data = self.client.persist(self.data)
+        # self.data = dd.read_parquet(training_file_path,engine='fastparquet')
+        # self.client = Client()
+        # self.data = self.client.persist(self.data)
+        self.data= pd.read_parquet(training_file_path, engine="fastparquet")
     def __getitem__(self, idx):
-        data_transformed = self.data.loc[idx].compute()
-        data_transformed = data_transformed.to_dict('records')
-        record = data_transformed[0]
+        # data_transformed = self.data.loc[idx].compute()
+        # data_transformed = data_transformed.to_dict('records')
+        # record = data_transformed[0]
+        record = self.data.iloc[idx]
         record_dict = {"tokens":record[self.tokens_field],"entities":record[self.entities_field]}
         # instance = self.process_instance(record_dict,self.label_stoi)
         instance = ast.literal_eval(record['instance'])
