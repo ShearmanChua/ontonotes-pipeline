@@ -31,7 +31,7 @@ def HAnDS_1mil():
     task.connect(args)
     task.execute_remotely()
 
-    import model.constant as C
+    from model import constant as C
 
     logger = task.get_logger()
 
