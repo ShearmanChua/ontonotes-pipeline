@@ -54,6 +54,7 @@ class FetDataset(Dataset):
         self.label_stoi = label_stoi
         self.label_size = len(label_stoi)
         self.data = dd.read_parquet(training_file_path,engine='fastparquet')
+        self.data = client.persist(self.data)
     def __getitem__(self, idx):
         data_transformed = self.data.loc[idx].compute()
         data_transformed = data_transformed.to_dict('records')
