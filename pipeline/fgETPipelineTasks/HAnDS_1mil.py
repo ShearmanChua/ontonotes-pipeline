@@ -11,7 +11,6 @@ import codecs
 import re
 import numpy as np
 import gzip
-import model.constant as C
 
 from allennlp.modules.elmo import batch_to_ids
 
@@ -31,6 +30,9 @@ def HAnDS_1mil():
     args = {"project":PROJECT_NAME,"source_dataset":DATASET_PARTIAL_NAME,"dataset_project":DATASET_PROJECT, "dataset_name":DATASET_NAME}
     task.connect(args)
     task.execute_remotely()
+
+    import model.constant as C
+
     logger = task.get_logger()
 
     # get uploaded dataset
