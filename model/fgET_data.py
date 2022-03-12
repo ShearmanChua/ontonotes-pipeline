@@ -5,7 +5,7 @@ import model.constant as C
 from torch.utils.data import Dataset
 from allennlp.modules.elmo import batch_to_ids
 import dask.dataframe as dd
-from ast import literal_eval as make_tuple
+import ast
 
 DIGIT_PATTERN = re.compile('\d')
 
@@ -60,7 +60,7 @@ class FetDataset(Dataset):
         record = data_transformed[0]
         record_dict = {"tokens":record[self.tokens_field],"entities":record[self.entities_field]}
         # instance = self.process_instance(record_dict,self.label_stoi)
-        instance = make_tuple(record['instance'])
+        instance = ast.literal_eval(record['instance'])
         return instance
 
     def __len__(self):
