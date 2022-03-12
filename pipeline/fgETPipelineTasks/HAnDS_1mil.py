@@ -53,6 +53,14 @@ def HAnDS_1mil():
     print("First 10 files in {} folder: ".format(args['source_dataset']) ,files[:10])
 
     files_required = []
+
+    labels_file_path = get_clearml_file_path('datasets/multimodal','fgET data','ner_tags.json')
+
+    with open(labels_file_path) as json_file:
+        label_stoi = json.load(json_file)
+
+    label_size = len(label_stoi)
+    print('Label size: {}'.format(len(label_stoi)))
     
     for i in range(0,20):
         files_required.append('train_{}.parquet'.format(str(i)))
@@ -92,19 +100,19 @@ def HAnDS_1mil():
     train_instances = []
     for index, row in train_df.iterrows():
         record_dict = {"tokens":row['tokens'],"entities":row['fine_grained_entities']}
-        instance = process_instance(record_dict)
+        instance = process_instance(record_dict,label_stoi)
         train_instances.append(instance)
     train_df['instance'] = train_instances
     val_instances = []
     for index, row in val_df.iterrows():
         record_dict = {"tokens":row['tokens'],"entities":row['fine_grained_entities']}
-        instance = process_instance(record_dict)
+        instance = process_instance(record_dict,label_stoi)
         val_instances.append(instance)
     val_df['instance'] = val_instances
     test_instances = []
     for index, row in test_df.iterrows():
         record_dict = {"tokens":row['tokens'],"entities":row['fine_grained_entities']}
-        instance = process_instance(record_dict)
+        instance = process_instance(record_dict,label_stoi)
         test_instances.append(instance)
     test_df['instance'] = test_instances
     
@@ -123,16 +131,8 @@ def HAnDS_1mil():
     dataset.upload(output_url='s3://experiment-logging/multimodal')
     dataset.finalize()
 
-def process_instance(inst):
+def process_instance(inst,label_stoi):
     from model import constant as C
-    
-    labels_file_path = get_clearml_file_path('datasets/multimodal','fgET data','ner_tags.json')
-
-    with open(labels_file_path) as json_file:
-        label_stoi = json.load(json_file)
-
-    label_size = len(label_stoi)
-    print('Label size: {}'.format(len(label_stoi)))
 
     tokens = inst['tokens']
     tokens = [C.TOK_REPLACEMENT.get(t, t) for t in tokens]
