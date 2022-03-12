@@ -31,8 +31,6 @@ def HAnDS_1mil():
     task.connect(args)
     task.execute_remotely()
 
-    from model import constant as C
-
     logger = task.get_logger()
 
     # get uploaded dataset
@@ -126,6 +124,8 @@ def HAnDS_1mil():
     dataset.finalize()
 
 def process_instance(inst):
+    from model import constant as C
+    
     labels_file_path = get_clearml_file_path('datasets/multimodal','fgET data','ner_tags.json')
 
     with open(labels_file_path) as json_file:
