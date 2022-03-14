@@ -19,7 +19,7 @@ def HAnDS_1mil():
     TASK_NAME = "HAnDS_dataset_generate_1mil"
     DATASET_PROJECT = "datasets/multimodal"
     DATASET_PARTIAL_NAME = "fgET HAnDS data"
-    DATASET_NAME = "fgET HAnDS 300k preprocessed"
+    DATASET_NAME = "fgET HAnDS 200k preprocessed"
 
     # Task.add_requirements("-rrequirements.txt")
     Task.force_requirements_env_freeze(force=True, requirements_file='requirements.txt')
