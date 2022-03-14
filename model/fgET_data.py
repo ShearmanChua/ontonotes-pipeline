@@ -138,21 +138,5 @@ class FetDataset(Dataset):
             batch_men_ids.extend(men_ids)
             batch_mentions.extend(mentions)
 
-        if self.gpu:
-            batch_char_ids = torch.cuda.LongTensor(batch_char_ids)
-            batch_labels = torch.cuda.FloatTensor(batch_labels)
-            batch_men_mask = torch.cuda.FloatTensor(batch_men_mask)
-            batch_ctx_mask = torch.cuda.FloatTensor(batch_ctx_mask)
-            batch_gathers = torch.cuda.LongTensor(batch_gathers)
-            batch_dist = torch.cuda.FloatTensor(batch_dist)
-
-        else:
-            batch_char_ids = torch.LongTensor(batch_char_ids)
-            batch_labels = torch.FloatTensor(batch_labels)
-            batch_men_mask = torch.FloatFloatTensorTensor(batch_men_mask)
-            batch_ctx_mask = torch.LongTensor(batch_ctx_mask)
-            batch_gathers = torch.LongTensor(batch_gathers)
-            batch_dist = torch.FloatTensor(batch_dist)
-
         return (batch_char_ids, batch_labels, batch_men_mask, batch_ctx_mask,
                 batch_dist, batch_gathers, batch_men_ids, batch_mentions)

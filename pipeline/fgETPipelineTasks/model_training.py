@@ -103,12 +103,12 @@ def model_training():
     val_file_path = get_clearml_file_path(args.fgETdata_dataset_project,args.fgETdata_dataset_name,args.val_file_name)
     test_file_path = get_clearml_file_path(args.fgETdata_dataset_project,args.fgETdata_dataset_name,args.test_file_name)
 
-    train_set = FetDataset(train_file_path,args.tokens_field,args.entities_field,labels_strtoidx)
+    train_set = FetDataset(train_file_path,args.tokens_field,args.entities_field,labels_strtoidx,args.gpu)
     train_loader = DataLoader(train_set, batch_size=args.batch_size, shuffle=False,collate_fn=train_set.batch_process,num_workers=num_worker)
-    val_set = FetDataset(val_file_path,args.tokens_field,args.entities_field,labels_strtoidx)
+    val_set = FetDataset(val_file_path,args.tokens_field,args.entities_field,labels_strtoidx,args.gpu)
     val_loader = DataLoader(val_set, batch_size=args.batch_size, shuffle=False,collate_fn=val_set.batch_process,num_workers=num_worker)
     if args.test:
-        test_set = FetDataset(test_file_path,args.tokens_field,args.entities_field,labels_strtoidx)
+        test_set = FetDataset(test_file_path,args.tokens_field,args.entities_field,labels_strtoidx,args.gpu)
         test_loader = DataLoader(test_set, batch_size=args.batch_size, shuffle=False,collate_fn=test_set.batch_process,num_workers=num_worker)
 
 
@@ -154,9 +154,9 @@ def model_training():
     }
 
     if args.train:
-        model,state,best_scores = run_training(train_loader,val_loader,model,optimizer,args.max_epoch,logger,state,best_scores)
+        model,state,best_scores = run_training(train_loader,val_loader,model,optimizer,args.max_epoch,logger,state,best_scores,args.gpu)
     if args.test:
-       results,best_scores = run_test(test_loader,model,logger,best_scores)
+       results,best_scores = run_test(test_loader,model,logger,best_scores,args.gpu)
        collated_results = {'results':[]}
        for gold, pred, men_id,mention,score in zip(results['gold'],results['pred'],results['ids'],results['mentions'],results['scores']):
             arranged_results = dict()
@@ -200,7 +200,7 @@ def model_training():
 
 
 
-def run_training(train_loader,validation_loader,model,optimizer,epochs,logger,state,best_scores):
+def run_training(train_loader,validation_loader,model,optimizer,epochs,logger,state,best_scores,gpu=False):
 
     from collections import defaultdict
     import torch
@@ -219,6 +219,22 @@ def run_training(train_loader,validation_loader,model,optimizer,epochs,logger,st
         for batch in train_loader:
 
             elmos, labels, men_masks, ctx_masks, dists, gathers, men_ids, mentions = batch
+
+            if gpu:
+                elmos = torch.cuda.LongTensor(elmos)
+                labels = torch.cuda.FloatTensor(labels)
+                men_masks = torch.cuda.FloatTensor(men_masks)
+                ctx_masks = torch.cuda.FloatTensor(ctx_masks)
+                gathers = torch.cuda.LongTensor(gathers)
+                dists = torch.cuda.FloatTensor(dists)
+
+            else:
+                elmos = torch.LongTensor(elmos)
+                labels = torch.FloatTensor(labels)
+                men_masks = torch.FloatFloatTensorTensor(men_masks)
+                ctx_masks = torch.LongTensor(ctx_masks)
+                gathers = torch.LongTensor(gathers)
+                dists = torch.FloatTensor(dists)
 
             progress.update(1)
             optimizer.zero_grad()
@@ -242,6 +258,23 @@ def run_training(train_loader,validation_loader,model,optimizer,epochs,logger,st
             for batch in validation_loader:
 
                 elmos, labels, men_masks, ctx_masks, dists, gathers, men_ids, mentions = batch
+
+                if gpu:
+                    elmos = torch.cuda.LongTensor(elmos)
+                    labels = torch.cuda.FloatTensor(labels)
+                    men_masks = torch.cuda.FloatTensor(men_masks)
+                    ctx_masks = torch.cuda.FloatTensor(ctx_masks)
+                    gathers = torch.cuda.LongTensor(gathers)
+                    dists = torch.cuda.FloatTensor(dists)
+
+                else:
+                    elmos = torch.LongTensor(elmos)
+                    labels = torch.FloatTensor(labels)
+                    men_masks = torch.FloatFloatTensorTensor(men_masks)
+                    ctx_masks = torch.LongTensor(ctx_masks)
+                    gathers = torch.LongTensor(gathers)
+                    dists = torch.FloatTensor(dists)
+
 
                 progress.update(1)
 
@@ -297,7 +330,7 @@ def run_training(train_loader,validation_loader,model,optimizer,epochs,logger,st
 
     return model,state,best_scores
 
-def run_test(test_loader,model,logger,best_scores):
+def run_test(test_loader,model,logger,best_scores,gpu=False):
     from collections import defaultdict
     import torch
     from model.fgET_scorer import calculate_metrics
@@ -310,6 +343,23 @@ def run_test(test_loader,model,logger,best_scores):
         for batch in test_loader:
 
             elmos, labels, men_masks, ctx_masks, dists, gathers, men_ids, mentions = batch
+
+            if gpu:
+                elmos = torch.cuda.LongTensor(elmos)
+                labels = torch.cuda.FloatTensor(labels)
+                men_masks = torch.cuda.FloatTensor(men_masks)
+                ctx_masks = torch.cuda.FloatTensor(ctx_masks)
+                gathers = torch.cuda.LongTensor(gathers)
+                dists = torch.cuda.FloatTensor(dists)
+
+            else:
+                elmos = torch.LongTensor(elmos)
+                labels = torch.FloatTensor(labels)
+                men_masks = torch.FloatFloatTensorTensor(men_masks)
+                ctx_masks = torch.LongTensor(ctx_masks)
+                gathers = torch.LongTensor(gathers)
+                dists = torch.FloatTensor(dists)
+
 
             progress.update(1)
 
