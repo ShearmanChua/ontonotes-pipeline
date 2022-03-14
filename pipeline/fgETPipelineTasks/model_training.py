@@ -31,7 +31,7 @@ def model_training():
     arg_parser.add_argument('--svd')
     arg_parser.add_argument('--lr', type=float, default=1e-5)
     arg_parser.add_argument('--max_epoch', type=int, default=80)
-    arg_parser.add_argument('--batch_size', type=int, default=32)
+    arg_parser.add_argument('--batch_size', type=int, default=64)
     arg_parser.add_argument('--elmo_dataset_project', type=str, default='datasets/multimodal')
     arg_parser.add_argument('--elmo_dataset_name', type=str, default='elmo weights')
     arg_parser.add_argument('--elmo_option_file', type=str, default='elmo_5.5B_options.json')
@@ -49,17 +49,17 @@ def model_training():
     arg_parser.add_argument('--labels_dataset_name', type=str, default='fgET data')
     arg_parser.add_argument('--labels_file_name', type=str, default='ner_tags.json')
     arg_parser.add_argument('--fgETdata_dataset_project', type=str, default='datasets/multimodal')
-    arg_parser.add_argument('--fgETdata_dataset_name', type=str, default='fgET HAnDS 100k preprocessed')
+    arg_parser.add_argument('--fgETdata_dataset_name', type=str, default='fgET HAnDS 500k preprocessed')
     arg_parser.add_argument('--train_file_name', type=str, default='train.parquet')
     arg_parser.add_argument('--val_file_name', type=str, default='validation.parquet')
     arg_parser.add_argument('--test_file_name', type=str, default='test.parquet')
     arg_parser.add_argument('--tokens_field', type=str, default='tokens')
     arg_parser.add_argument('--entities_field', type=str, default='fine_grained_entities')
     arg_parser.add_argument('--results_dataset_project', type=str, default='datasets/multimodal')
-    arg_parser.add_argument('--results_dataset_name', type=str, default='fgET HAnDS results')
+    arg_parser.add_argument('--results_dataset_name', type=str, default='fgET results 80 epochs 1e-5 batch 64')
     arg_parser.add_argument('--train_from_checkpoint', type=bool, default=False)
     arg_parser.add_argument('--model_checkpoint_project', type=str, default='datasets/multimodal')
-    arg_parser.add_argument('--model_checkpoint_dataset_name', type=str, default='fgET results 80 epochs 1e-5')
+    arg_parser.add_argument('--model_checkpoint_dataset_name', type=str, default='fgET results 80 epochs 1e-5 batch 64')
     arg_parser.add_argument('--model_checkpoint_file_name', type=str, default='best_mac.mdl')
 
     args = arg_parser.parse_args()
@@ -188,9 +188,10 @@ def model_training():
 
         json_object = json.dumps(training_records, indent = 4)
         df = pd.read_json(StringIO(json_object), orient ='index')
+        df.to_csv(os.path.join(gettempdir(), 'results.csv'),index=False)
         logger.report_table(title='results',series='pandas DataFrame',iteration=0,table_plot=df)
 
-    files = [f for f in listdir(gettempdir()) if isfile(join(gettempdir(), f)) and (f.endswith('.json') or f.endswith('.mdl'))]
+    files = [f for f in listdir(gettempdir()) if isfile(join(gettempdir(), f)) and (f.endswith('.json') or f.endswith('.mdl') or f.endswith('.csv'))]
 
     for file in files:
         dataset.add_files(os.path.join(gettempdir(), file))
