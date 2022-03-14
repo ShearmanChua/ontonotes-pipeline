@@ -19,7 +19,7 @@ def HAnDS_1mil():
     TASK_NAME = "HAnDS_dataset_generate_1mil"
     DATASET_PROJECT = "datasets/multimodal"
     DATASET_PARTIAL_NAME = "fgET HAnDS data"
-    DATASET_NAME = "fgET HAnDS 100k preprocessed"
+    DATASET_NAME = "fgET HAnDS 500k preprocessed"
 
     # Task.add_requirements("-rrequirements.txt")
     Task.force_requirements_env_freeze(force=True, requirements_file='requirements.txt')
@@ -93,9 +93,9 @@ def HAnDS_1mil():
     val_df = val_df[~val_df.fine_grained_entities.str.len().eq(0)]
     test_df = test_df[~test_df.fine_grained_entities.str.len().eq(0)]
 
-    train_df = train_df.sample(n=100000)
-    val_df = val_df.sample(n=20000)
-    test_df = test_df.sample(n=20000)
+    train_df = train_df.sample(n=500000)
+    val_df = val_df.sample(n=40000)
+    test_df = test_df.sample(n=40000)
 
     train_instances = []
     for index, row in train_df.iterrows():
