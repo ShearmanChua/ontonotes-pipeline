@@ -129,8 +129,11 @@ def HAnDS_1mil():
     print("new test df:", test_df)
 
     train_df.to_parquet(os.path.join(gettempdir(), 'train.parquet'),engine='fastparquet')
+    print("train_df done!!")
     val_df.to_parquet(os.path.join(gettempdir(), 'validation.parquet'),engine='fastparquet')
+    print("val_df done!!")
     test_df.to_parquet(os.path.join(gettempdir(), 'test.parquet'),engine='fastparquet')
+    print("test_df done!!")
 
     dataset.add_files(os.path.join(gettempdir(), 'train.parquet'))
     dataset.add_files(os.path.join(gettempdir(), 'validation.parquet'))
