@@ -80,7 +80,7 @@ def model_training():
 
     timestamp = time.strftime('%Y%m%d_%H%M%S', time.localtime())
     results_dataset_name = args.results_dataset_name + ' ' + timestamp
-    num_worker = 4 * 1
+    num_worker = 0
 
     print("Loading labels dictionary from clearML {} dataset from file {}".format(args.labels_dataset_name,args.labels_file_name))
     labels_file_path = get_clearml_file_path(args.labels_dataset_project,args.labels_dataset_name,args.labels_file_name)
