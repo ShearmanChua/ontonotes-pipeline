@@ -103,12 +103,12 @@ def model_training():
     val_file_path = get_clearml_file_path(args.fgETdata_dataset_project,args.fgETdata_dataset_name,args.val_file_name)
     test_file_path = get_clearml_file_path(args.fgETdata_dataset_project,args.fgETdata_dataset_name,args.test_file_name)
 
-    train_set = FetDataset(train_file_path,args.tokens_field,args.entities_field,labels_strtoidx,args.gpu)
+    train_set = FetDataset(train_file_path,args.tokens_field,args.entities_field,labels_strtoidx)
     train_loader = DataLoader(train_set, batch_size=args.batch_size, shuffle=False,collate_fn=train_set.batch_process,num_workers=num_worker)
-    val_set = FetDataset(val_file_path,args.tokens_field,args.entities_field,labels_strtoidx,args.gpu)
+    val_set = FetDataset(val_file_path,args.tokens_field,args.entities_field,labels_strtoidx)
     val_loader = DataLoader(val_set, batch_size=args.batch_size, shuffle=False,collate_fn=val_set.batch_process,num_workers=num_worker)
     if args.test:
-        test_set = FetDataset(test_file_path,args.tokens_field,args.entities_field,labels_strtoidx,args.gpu)
+        test_set = FetDataset(test_file_path,args.tokens_field,args.entities_field,labels_strtoidx)
         test_loader = DataLoader(test_set, batch_size=args.batch_size, shuffle=False,collate_fn=test_set.batch_process,num_workers=num_worker)
 
 
