@@ -93,7 +93,7 @@ def HAnDS_1mil():
     val_df = val_df[~val_df.fine_grained_entities.str.len().eq(0)]
     test_df = test_df[~test_df.fine_grained_entities.str.len().eq(0)]
 
-    train_df = train_df.sample(n=300000)
+    train_df = train_df.sample(n=200000)
     val_df = val_df.sample(n=40000)
     test_df = test_df.sample(n=40000)
 
