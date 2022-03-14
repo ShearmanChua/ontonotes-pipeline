@@ -30,7 +30,7 @@ def model_training():
     arg_parser = ArgumentParser()
     arg_parser.add_argument('--svd')
     arg_parser.add_argument('--lr', type=float, default=1e-5)
-    arg_parser.add_argument('--max_epoch', type=int, default=100)
+    arg_parser.add_argument('--max_epoch', type=int, default=80)
     arg_parser.add_argument('--batch_size', type=int, default=32)
     arg_parser.add_argument('--elmo_dataset_project', type=str, default='datasets/multimodal')
     arg_parser.add_argument('--elmo_dataset_name', type=str, default='elmo weights')
@@ -59,7 +59,7 @@ def model_training():
     arg_parser.add_argument('--results_dataset_name', type=str, default='fgET HAnDS results')
     arg_parser.add_argument('--train_from_checkpoint', type=bool, default=False)
     arg_parser.add_argument('--model_checkpoint_project', type=str, default='datasets/multimodal')
-    arg_parser.add_argument('--model_checkpoint_dataset_name', type=str, default='fgET results')
+    arg_parser.add_argument('--model_checkpoint_dataset_name', type=str, default='fgET results 80 epochs 1e-5')
     arg_parser.add_argument('--model_checkpoint_file_name', type=str, default='best_mac.mdl')
 
     args = arg_parser.parse_args()
@@ -80,7 +80,7 @@ def model_training():
 
     timestamp = time.strftime('%Y%m%d_%H%M%S', time.localtime())
     results_dataset_name = args.results_dataset_name + ' ' + timestamp
-    # num_worker = 4 * 1
+    num_worker = 4 * 1
 
     print("Loading labels dictionary from clearML {} dataset from file {}".format(args.labels_dataset_name,args.labels_file_name))
     labels_file_path = get_clearml_file_path(args.labels_dataset_project,args.labels_dataset_name,args.labels_file_name)
@@ -104,12 +104,12 @@ def model_training():
     test_file_path = get_clearml_file_path(args.fgETdata_dataset_project,args.fgETdata_dataset_name,args.test_file_name)
 
     train_set = FetDataset(train_file_path,args.tokens_field,args.entities_field,labels_strtoidx,args.gpu)
-    train_loader = DataLoader(train_set, batch_size=args.batch_size, shuffle=False,collate_fn=train_set.batch_process)
+    train_loader = DataLoader(train_set, batch_size=args.batch_size, shuffle=False,collate_fn=train_set.batch_process,num_workers=num_worker)
     val_set = FetDataset(val_file_path,args.tokens_field,args.entities_field,labels_strtoidx,args.gpu)
-    val_loader = DataLoader(val_set, batch_size=args.batch_size, shuffle=False,collate_fn=val_set.batch_process)
+    val_loader = DataLoader(val_set, batch_size=args.batch_size, shuffle=False,collate_fn=val_set.batch_process,num_workers=num_worker)
     if args.test:
         test_set = FetDataset(test_file_path,args.tokens_field,args.entities_field,labels_strtoidx,args.gpu)
-        test_loader = DataLoader(test_set, batch_size=args.batch_size, shuffle=False,collate_fn=test_set.batch_process)
+        test_loader = DataLoader(test_set, batch_size=args.batch_size, shuffle=False,collate_fn=test_set.batch_process,num_workers=num_worker)
 
 
     # Set GPU device
