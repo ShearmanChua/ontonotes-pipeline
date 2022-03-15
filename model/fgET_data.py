@@ -65,8 +65,8 @@ class FetDataset(Dataset):
         # record = data_transformed[0]
         record = self.data.iloc[idx]
         record_dict = {"tokens":record[self.tokens_field],"entities":record[self.entities_field]}
-        # instance = self.process_instance(record_dict,self.label_stoi)
-        instance = ast.literal_eval(record['instance'])
+        instance = self.process_instance(record_dict,self.label_stoi)
+        # instance = ast.literal_eval(record['instance'])
         return instance
 
     def __len__(self):

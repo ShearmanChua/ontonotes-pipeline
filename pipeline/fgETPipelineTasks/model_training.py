@@ -49,7 +49,7 @@ def model_training():
     arg_parser.add_argument('--labels_dataset_name', type=str, default='fgET data')
     arg_parser.add_argument('--labels_file_name', type=str, default='ner_tags.json')
     arg_parser.add_argument('--fgETdata_dataset_project', type=str, default='datasets/multimodal')
-    arg_parser.add_argument('--fgETdata_dataset_name', type=str, default='fgET HAnDS 200k preprocessed')
+    arg_parser.add_argument('--fgETdata_dataset_name', type=str, default='fgET HAnDS 100k preprocessed')
     arg_parser.add_argument('--train_file_name', type=str, default='train.parquet')
     arg_parser.add_argument('--val_file_name', type=str, default='validation.parquet')
     arg_parser.add_argument('--test_file_name', type=str, default='test.parquet')

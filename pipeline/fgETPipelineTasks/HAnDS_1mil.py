@@ -19,7 +19,7 @@ def HAnDS_1mil():
     TASK_NAME = "HAnDS_dataset_generate_1mil"
     DATASET_PROJECT = "datasets/multimodal"
     DATASET_PARTIAL_NAME = "fgET HAnDS data"
-    DATASET_NAME = "fgET HAnDS 200k preprocessed"
+    DATASET_NAME = "fgET HAnDS 500k preprocessed"
 
     # Task.add_requirements("-rrequirements.txt")
     Task.force_requirements_env_freeze(force=True, requirements_file='requirements.txt')
@@ -93,32 +93,32 @@ def HAnDS_1mil():
     val_df = val_df[~val_df.fine_grained_entities.str.len().eq(0)]
     test_df = test_df[~test_df.fine_grained_entities.str.len().eq(0)]
 
-    train_df = train_df.sample(n=200000)
+    train_df = train_df.sample(n=500000)
     val_df = val_df.sample(n=40000)
     test_df = test_df.sample(n=40000)
 
-    train_instances = []
-    for index, row in train_df.iterrows():
-        record_dict = {"tokens":row['tokens'],"entities":row['fine_grained_entities']}
-        instance = process_instance(record_dict,label_stoi)
-        train_instances.append(instance)
-    train_df['instance'] = train_instances
-    val_instances = []
-    for index, row in val_df.iterrows():
-        record_dict = {"tokens":row['tokens'],"entities":row['fine_grained_entities']}
-        instance = process_instance(record_dict,label_stoi)
-        val_instances.append(instance)
-    val_df['instance'] = val_instances
-    test_instances = []
-    for index, row in test_df.iterrows():
-        record_dict = {"tokens":row['tokens'],"entities":row['fine_grained_entities']}
-        instance = process_instance(record_dict,label_stoi)
-        test_instances.append(instance)
-    test_df['instance'] = test_instances
+    # train_instances = []
+    # for index, row in train_df.iterrows():
+    #     record_dict = {"tokens":row['tokens'],"entities":row['fine_grained_entities']}
+    #     instance = process_instance(record_dict,label_stoi)
+    #     train_instances.append(instance)
+    # train_df['instance'] = train_instances
+    # val_instances = []
+    # for index, row in val_df.iterrows():
+    #     record_dict = {"tokens":row['tokens'],"entities":row['fine_grained_entities']}
+    #     instance = process_instance(record_dict,label_stoi)
+    #     val_instances.append(instance)
+    # val_df['instance'] = val_instances
+    # test_instances = []
+    # for index, row in test_df.iterrows():
+    #     record_dict = {"tokens":row['tokens'],"entities":row['fine_grained_entities']}
+    #     instance = process_instance(record_dict,label_stoi)
+    #     test_instances.append(instance)
+    # test_df['instance'] = test_instances
 
-    train_df['instance'] = train_df['instance'].astype('str') 
-    val_df['instance'] = val_df['instance'].astype('str') 
-    test_df['instance'] = test_df['instance'].astype('str') 
+    # train_df['instance'] = train_df['instance'].astype('str') 
+    # val_df['instance'] = val_df['instance'].astype('str') 
+    # test_df['instance'] = test_df['instance'].astype('str') 
 
     train_df.reset_index(drop=True,inplace=True)
     val_df.reset_index(drop=True,inplace=True)
