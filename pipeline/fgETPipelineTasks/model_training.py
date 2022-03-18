@@ -122,7 +122,7 @@ def model_training():
         if gpu:
             model.cuda()
 
-        total_step = args.max_epoch * len(test_loader)
+        total_step = len(test_loader)
         optimizer = model.configure_optimizers(args.weight_decay,args.lr,total_step)
 
         model_file_path = get_clearml_file_path(args.model_checkpoint_project,args.model_checkpoint_dataset_name,args.model_checkpoint_file_name)
