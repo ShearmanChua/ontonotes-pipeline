@@ -128,8 +128,8 @@ def model_training():
         model_file_path = get_clearml_file_path(args.model_checkpoint_project,args.model_checkpoint_dataset_name,args.model_checkpoint_file_name)
         print("Retrieving model checkpoint from {}".format(model_file_path))
         checkpoint = torch.load(model_file_path)
-        model.load_state_dict(checkpoint['model_state_dict'])
-        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        model.load_state_dict(checkpoint['model'])
+        optimizer.load_state_dict(checkpoint['optimizer'])
 
         state = {
             'model': model.state_dict(),
@@ -229,8 +229,8 @@ def model_training():
         model_file_path = get_clearml_file_path(args.model_checkpoint_project,args.model_checkpoint_dataset_name,args.model_checkpoint_file_name)
         print("Retrieving model checkpoint from {}".format(model_file_path))
         checkpoint = torch.load(model_file_path)
-        model.load_state_dict(checkpoint['model_state_dict'])
-        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        model.load_state_dict(checkpoint['model'])
+        optimizer.load_state_dict(checkpoint['optimizer'])
 
     state = {
         'model': model.state_dict(),
