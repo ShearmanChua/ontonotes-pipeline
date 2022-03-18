@@ -49,14 +49,14 @@ def model_training():
     arg_parser.add_argument('--labels_dataset_name', type=str, default='fgET data')
     arg_parser.add_argument('--labels_file_name', type=str, default='ner_tags.json')
     arg_parser.add_argument('--fgETdata_dataset_project', type=str, default='datasets/multimodal')
-    arg_parser.add_argument('--fgETdata_dataset_name', type=str, default='fgET HAnDS 100k preprocessed')
+    arg_parser.add_argument('--fgETdata_dataset_name', type=str, default='fgET data')
     arg_parser.add_argument('--train_file_name', type=str, default='train.parquet')
     arg_parser.add_argument('--val_file_name', type=str, default='validation.parquet')
-    arg_parser.add_argument('--test_file_name', type=str, default='test.parquet')
+    arg_parser.add_argument('--test_file_name', type=str, default='full_wfb.parquet')
     arg_parser.add_argument('--tokens_field', type=str, default='tokens')
     arg_parser.add_argument('--entities_field', type=str, default='fine_grained_entities')
     arg_parser.add_argument('--results_dataset_project', type=str, default='datasets/multimodal')
-    arg_parser.add_argument('--results_dataset_name', type=str, default='fgET results 80 epochs 1e-5 batch 64 100k')
+    arg_parser.add_argument('--results_dataset_name', type=str, default='fgET test results')
     arg_parser.add_argument('--train_from_checkpoint', type=bool, default=False)
     arg_parser.add_argument('--test_from_checkpoint', type=bool, default=False)
     arg_parser.add_argument('--model_checkpoint_project', type=str, default='datasets/multimodal')
@@ -98,6 +98,7 @@ def model_training():
     print('Label size: {}'.format(len(labels_strtoidx)))
 
     if args.test_from_checkpoint:
+        print("------------ Performing model testing!!!! ------------")
         # Set GPU device
         gpu = torch.cuda.is_available() and args.gpu
         if gpu:
