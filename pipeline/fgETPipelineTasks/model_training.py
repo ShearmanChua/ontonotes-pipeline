@@ -99,6 +99,11 @@ def model_training():
 
     if args.test_from_checkpoint:
         print("------------ Performing model testing!!!! ------------")
+
+        test_file_path = get_clearml_file_path(args.fgETdata_dataset_project,args.fgETdata_dataset_name,args.test_file_name)
+        test_set = FetDataset(test_file_path,args.tokens_field,args.entities_field,labels_strtoidx,args.gpu)
+        test_loader = DataLoader(test_set, batch_size=args.batch_size, shuffle=False,collate_fn=test_set.batch_process,num_workers=num_worker)
+
         # Set GPU device
         gpu = torch.cuda.is_available() and args.gpu
         if gpu:
@@ -117,7 +122,7 @@ def model_training():
         if gpu:
             model.cuda()
 
-        total_step = args.max_epoch * len(train_loader)
+        total_step = args.max_epoch * len(test_loader)
         optimizer = model.configure_optimizers(args.weight_decay,args.lr,total_step)
 
         model_file_path = get_clearml_file_path(args.model_checkpoint_project,args.model_checkpoint_dataset_name,args.model_checkpoint_file_name)
@@ -137,10 +142,6 @@ def model_training():
             'best_acc_val': 0, 'best_mac_val': 0, 'best_mic_val': 0,
             'best_acc_test': 0, 'best_mac_test': 0, 'best_mic_test': 0
         }
-
-        test_file_path = get_clearml_file_path(args.fgETdata_dataset_project,args.fgETdata_dataset_name,args.test_file_name)
-        test_set = FetDataset(test_file_path,args.tokens_field,args.entities_field,labels_strtoidx,args.gpu)
-        test_loader = DataLoader(test_set, batch_size=args.batch_size, shuffle=False,collate_fn=test_set.batch_process,num_workers=num_worker)
 
         results,best_scores = run_test(test_loader,model,logger,best_scores,args.gpu)
         collated_results = {'results':[]}
