@@ -43,7 +43,6 @@ decorator==5.1.1
 defusedxml==0.7.1
 Deprecated==1.2.13
 dill==0.3.4
-distributed
 docker-pycreds==0.4.0
 entrypoints==0.4
 fairscale

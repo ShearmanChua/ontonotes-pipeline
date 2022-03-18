@@ -5,7 +5,6 @@ import model.constant as C
 from torch.utils.data import Dataset
 from allennlp.modules.elmo import batch_to_ids
 import dask.dataframe as dd
-from dask.distributed import Client 
 import pandas as pd
 import ast
 

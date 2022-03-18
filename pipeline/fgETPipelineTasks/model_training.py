@@ -16,7 +16,7 @@ from clearml import Task, Dataset
 def model_training():
 
     PROJECT_NAME = "fgET"
-    TASK_NAME = "model_training_frozen_elmo"
+    TASK_NAME = "model_testing"
 
     Task.force_requirements_env_freeze(force=True, requirements_file='requirements.txt')
     Task.add_requirements("torch")
@@ -58,8 +58,9 @@ def model_training():
     arg_parser.add_argument('--results_dataset_project', type=str, default='datasets/multimodal')
     arg_parser.add_argument('--results_dataset_name', type=str, default='fgET results 80 epochs 1e-5 batch 64 100k')
     arg_parser.add_argument('--train_from_checkpoint', type=bool, default=False)
+    arg_parser.add_argument('--test_from_checkpoint', type=bool, default=False)
     arg_parser.add_argument('--model_checkpoint_project', type=str, default='datasets/multimodal')
-    arg_parser.add_argument('--model_checkpoint_dataset_name', type=str, default='fgET results 80 epochs 1e-5 batch 64')
+    arg_parser.add_argument('--model_checkpoint_dataset_name', type=str, default='fgET results 80 epochs 1e-5 batch 64 500k')
     arg_parser.add_argument('--model_checkpoint_file_name', type=str, default='best_mac.mdl')
 
     args = arg_parser.parse_args()
@@ -95,6 +96,94 @@ def model_training():
     labels_idxtostr = {i: s for s, i in labels_strtoidx.items()}
     label_size = len(labels_strtoidx)
     print('Label size: {}'.format(len(labels_strtoidx)))
+
+    if args.test_from_checkpoint:
+        # Set GPU device
+        gpu = torch.cuda.is_available() and args.gpu
+        if gpu:
+            torch.cuda.set_device(args.device)
+
+        # Build model
+        model = fgET(label_size,
+                    elmo_option=elmo_option,
+                    elmo_weight=elmo_weight,
+                    elmo_dropout=args.elmo_dropout,
+                    repr_dropout=args.repr_dropout,
+                    dist_dropout=args.dist_dropout,
+                    latent_size=args.latent_size,
+                    svd=args.svd
+                    )
+        if gpu:
+            model.cuda()
+
+        total_step = args.max_epoch * len(train_loader)
+        optimizer = model.configure_optimizers(args.weight_decay,args.lr,total_step)
+
+        model_file_path = get_clearml_file_path(args.model_checkpoint_project,args.model_checkpoint_dataset_name,args.model_checkpoint_file_name)
+        print("Retrieving model checkpoint from {}".format(model_file_path))
+        checkpoint = torch.load(model_file_path)
+        model.load_state_dict(checkpoint['model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+        state = {
+            'model': model.state_dict(),
+            'optimizer': optimizer.state_dict(),
+            'args': vars(args),
+            'vocab': {'label': labels_strtoidx}
+        }
+
+        best_scores = {
+            'best_acc_val': 0, 'best_mac_val': 0, 'best_mic_val': 0,
+            'best_acc_test': 0, 'best_mac_test': 0, 'best_mic_test': 0
+        }
+
+        test_file_path = get_clearml_file_path(args.fgETdata_dataset_project,args.fgETdata_dataset_name,args.test_file_name)
+        test_set = FetDataset(test_file_path,args.tokens_field,args.entities_field,labels_strtoidx,args.gpu)
+        test_loader = DataLoader(test_set, batch_size=args.batch_size, shuffle=False,collate_fn=test_set.batch_process,num_workers=num_worker)
+
+        results,best_scores = run_test(test_loader,model,logger,best_scores,args.gpu)
+        collated_results = {'results':[]}
+        for gold, pred, men_id,mention,score in zip(results['gold'],results['pred'],results['ids'],results['mentions'],results['scores']):
+                arranged_results = dict()
+                gold_labels = [labels_idxtostr[i] for i, l in enumerate(gold) if l]
+                pred_labels = [labels_idxtostr[i] for i, l in enumerate(pred) if l]
+                arranged_results['mention_id'] = men_id
+                arranged_results['mention'] = mention
+                arranged_results['gold'] = gold_labels
+                arranged_results['predictions'] = pred_labels
+                arranged_results['scores'] = [score[i]for i, l in enumerate(pred) if l]
+                collated_results['results'].append(arranged_results)
+
+        # dataset = Dataset.create(
+        #     dataset_project=args.results_dataset_project, dataset_name=args.results_dataset_name
+        # )
+
+        dataset = create_dataset(args.results_dataset_project,args.results_dataset_name)
+
+        with codecs.open(os.path.join(gettempdir(), 'results.json'), mode='w', encoding='utf-8',
+                    errors='ignore') as fp:
+            json.dump(collated_results, fp=fp, ensure_ascii=False, indent = 4)
+        
+        training_data = collated_results['results']
+        training_records = {}
+
+        for i in range(0,len(training_data)):
+            training_records[str(i)] = training_data[i]
+
+        json_object = json.dumps(training_records, indent = 4)
+        df = pd.read_json(StringIO(json_object), orient ='index')
+        df.to_csv(os.path.join(gettempdir(), 'results.csv'),index=False)
+        logger.report_table(title='results',series='pandas DataFrame',iteration=0,table_plot=df)
+
+        files = [f for f in listdir(gettempdir()) if isfile(join(gettempdir(), f)) and (f.endswith('.json') or f.endswith('.mdl') or f.endswith('.csv'))]
+
+        for file in files:
+            dataset.add_files(os.path.join(gettempdir(), file))
+
+        dataset.upload(output_url='s3://experiment-logging/multimodal')
+        dataset.finalize()
+
+        return
 
     # Load data sets
     print('Loading data sets')
