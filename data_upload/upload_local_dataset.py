@@ -66,11 +66,19 @@ def main():
     # dataset.finalize()
 
     # Manually annotated Fine-grained Entity Recognition corpus with 117 entity types annotated
-    task = Task.init(project_name="bertopic", task_name="upload data")
+    # task = Task.init(project_name="bertopic", task_name="upload data")
+    # dataset = Dataset.create(
+    #         dataset_project="datasets/bertopic", dataset_name="c4 100k data"
+    #     )
+    # dataset.add_files("data/100k_c4_df.csv")
+    # dataset.upload(output_url='s3://experiment-logging/multimodal')
+    # dataset.finalize()
+
+    task = Task.init(project_name="fgET", task_name="upload data")
     dataset = Dataset.create(
-            dataset_project="datasets/bertopic", dataset_name="c4 100k data"
+            dataset_project="datasets/multimodal", dataset_name="FIGER raw data"
         )
-    dataset.add_files("data/100k_c4_df.csv")
+    dataset.add_files("data/figer.json")
     dataset.upload(output_url='s3://experiment-logging/multimodal')
     dataset.finalize()
 
