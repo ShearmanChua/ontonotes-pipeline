@@ -56,7 +56,7 @@ def model_training():
     arg_parser.add_argument('--tokens_field', type=str, default='tokens')
     arg_parser.add_argument('--entities_field', type=str, default='fine_grained_entities')
     arg_parser.add_argument('--results_dataset_project', type=str, default='datasets/multimodal')
-    arg_parser.add_argument('--results_dataset_name', type=str, default='fgET test results')
+    arg_parser.add_argument('--results_dataset_name', type=str, default='fgET train script results')
     arg_parser.add_argument('--train_from_checkpoint', type=bool, default=False)
     arg_parser.add_argument('--test_from_checkpoint', type=bool, default=False)
     arg_parser.add_argument('--model_checkpoint_project', type=str, default='datasets/multimodal')
@@ -220,6 +220,8 @@ def model_training():
                 )
     if gpu:
         model.cuda()
+
+    model.script()
 
     total_step = args.max_epoch * len(train_loader)
     optimizer = model.configure_optimizers(args.weight_decay,args.lr,total_step)
