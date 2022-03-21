@@ -221,7 +221,7 @@ def model_training():
     if gpu:
         model.cuda()
 
-    model.script()
+    torch.jit.script(model)
 
     total_step = args.max_epoch * len(train_loader)
     optimizer = model.configure_optimizers(args.weight_decay,args.lr,total_step)
