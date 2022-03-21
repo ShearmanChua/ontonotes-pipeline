@@ -46,7 +46,7 @@ def model_training():
     arg_parser.add_argument('--train', type=bool, default = True)
     arg_parser.add_argument('--test', type=bool, default = True)
     arg_parser.add_argument('--labels_dataset_project', type=str, default='datasets/multimodal')
-    arg_parser.add_argument('--labels_dataset_name', type=str, default='fgET data')
+    arg_parser.add_argument('--labels_dataset_name', type=str, default='fgET HAnDS 1k manual verified preprocessed')
     arg_parser.add_argument('--labels_file_name', type=str, default='ner_tags.json')
     arg_parser.add_argument('--fgETdata_dataset_project', type=str, default='datasets/multimodal')
     arg_parser.add_argument('--fgETdata_dataset_name', type=str, default='fgET data')
