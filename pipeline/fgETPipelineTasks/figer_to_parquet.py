@@ -54,11 +54,128 @@ def figer_to_parquet():
 
     print("First 10 data rows:", data_rows[:10])
 
+    classes_remapped, classes_combined = new_mapping(data_rows)
 
+    new_data_rows = []
+
+    for row in data_rows:
+        labels = []
+        for mention in row['mentions']: 
+            mention['labels'] = [classes_remapped[label] if label in classes_remapped.keys() else label for label in mention['labels']]
+            labels.extend(mention['labels'])
+        labels = list(dict.fromkeys(labels))
+        if(set(labels).issubset(set(classes_combined))):
+            new_data_rows.append(row)
+
+    formatted_data ={"TRAINING": []}
+
+    for doc in new_data_rows:
+        doc_dict = {}
+        doc_dict['source'] = doc['fileid']
+        sentence = ' '.join(doc['tokens'])
+        doc_dict['text'] = sentence
+        doc_dict['tokens'] = doc['tokens']
+        doc_dict['labels'] = []
+        fine_grained_entities = []
+        mention_count = 0
+        for mention in doc['mentions']:
+            mention_dict = dict()
+            mention_dict['labels'] = mention['labels']
+            for label in mention['labels']:
+                doc_dict['labels'].append(label)
+            mention_dict['start'] = mention['start']
+            mention_dict['end'] = mention['end']
+            mention_dict['mention'] = ' '.join(doc['tokens'][mention['start']:mention['end']])
+            mention_dict['mention_id'] = doc_dict['source'] = doc['fileid'] + '-' + str(mention_count)
+            fine_grained_entities.append(mention_dict)
+            mention_count += 1
+        
+        doc_dict['fine_grained_entities'] = fine_grained_entities
+        # print(doc_dict)
+        formatted_data['TRAINING'].append(doc_dict)
+                    
+    with codecs.open(os.path.join(gettempdir(), 'FIGER.json'), mode='w', encoding='utf-8',
+                errors='ignore') as fp:
+        json.dump(formatted_data, fp=fp, ensure_ascii=False, indent = 4)
+    dataset.add_files(os.path.join(gettempdir(), 'FIGER.json'))
+
+    training_data = formatted_data['TRAINING']
+    training_records = {}
+    for i in range(0,len(training_data)):
+        training_records[str(i)] = training_data[i]
+
+    json_object = json.dumps(training_records, indent = 4)
+    df = pd.read_json(StringIO(json_object), orient ='index')
+    print(df.head())
+
+    # train, val, test split of dataframe
+    train,val,test = np.split(df.sample(frac=1, random_state=42), [int(0.6*len(df)), int(0.8*len(df))])
+
+    train.reset_index(drop=True,inplace=True)
+    val.reset_index(drop=True,inplace=True)
+    test.reset_index(drop=True,inplace=True)
+
+    print("train df:", train)
+    print("val df:", val)
+    print("test df:", test)
+
+    train = train[~train.fine_grained_entities.str.len().eq(0)]
+    val = val[~val.fine_grained_entities.str.len().eq(0)]
+    test = test[~test.fine_grained_entities.str.len().eq(0)]
 
     dataset = Dataset.create(
             dataset_project=args['dataset_project'], dataset_name=args['dataset_name']
     )
+
+    #train df json
+    train_dict = {'TRAINING': []}
+
+    for source in train['source'].tolist():
+        train_dict['TRAINING'].append({'source':df.loc[df['source'] == source].iloc[0]['source'],'text':df.loc[df['source'] == source].iloc[0]['text'],'tokens':df.loc[df['source'] == source].iloc[0]['tokens'],'fine_grained_entities':df.loc[df['source'] == source].iloc[0]['fine_grained_entities']})
+
+    with codecs.open(os.path.join(gettempdir(), 'train.json'), mode='w', encoding='utf-8',
+                errors='ignore') as fp:
+        json.dump(train_dict, fp=fp, ensure_ascii=False, indent = 4)
+
+    dataset.add_files(os.path.join(gettempdir(), 'train.json'))
+
+    #val df json
+    val_dict = {'VALIDATION': []}
+
+    for source in val['source'].tolist():
+        val_dict['VALIDATION'].append({'source':df.loc[df['source'] == source].iloc[0]['source'],'text':df.loc[df['source'] == source].iloc[0]['text'],'tokens':df.loc[df['source'] == source].iloc[0]['tokens'],'fine_grained_entities':df.loc[df['source'] == source].iloc[0]['fine_grained_entities']})
+
+    with codecs.open(os.path.join(gettempdir(), 'validation.json'), mode='w', encoding='utf-8',
+                errors='ignore') as fp:
+        json.dump(val_dict, fp=fp, ensure_ascii=False, indent = 4)
+
+    dataset.add_files(os.path.join(gettempdir(), 'validation.json'))
+
+    #test df json
+    test_dict = {'TEST': []}
+
+    for source in test['source'].tolist():
+        test_dict['TEST'].append({'source':df.loc[df['source'] == source].iloc[0]['source'],'text':df.loc[df['source'] == source].iloc[0]['text'],'tokens':df.loc[df['source'] == source].iloc[0]['tokens'],'fine_grained_entities':df.loc[df['source'] == source].iloc[0]['fine_grained_entities']})
+
+    with codecs.open(os.path.join(gettempdir(), 'test.json'), mode='w', encoding='utf-8',
+                errors='ignore') as fp:
+        json.dump(test_dict, fp=fp, ensure_ascii=False, indent = 4)
+
+    dataset.add_files(os.path.join(gettempdir(), 'test.json'))
+
+    #convert dataframes to parquet
+    df.to_parquet(os.path.join(gettempdir(), 'figer_full.parquet'),engine='fastparquet')
+    train.to_parquet(os.path.join(gettempdir(), 'train.parquet'),engine='fastparquet')
+    val.to_parquet(os.path.join(gettempdir(), 'validation.parquet'),engine='fastparquet')
+    test.to_parquet(os.path.join(gettempdir(), 'test.parquet'),engine='fastparquet')
+
+    dataset.add_files(os.path.join(gettempdir(), 'figer_full.parquet'))
+    dataset.add_files(os.path.join(gettempdir(), 'train.parquet'))
+    dataset.add_files(os.path.join(gettempdir(), 'validation.parquet'))
+    dataset.add_files(os.path.join(gettempdir(), 'test.parquet'))
+
+    dataset.upload(output_url='s3://experiment-logging/multimodal')
+
 
 def new_mapping(figer_data_rows):
     figer_labels_dict = dict()
@@ -134,6 +251,8 @@ def new_mapping(figer_data_rows):
 
     classes_combined = list(classes_sim.keys())
     classes_combined.extend(list(classes_remapped.values()))
+
+    return classes_remapped, classes_combined
 
 if __name__ == '__main__':
     figer_to_parquet()
