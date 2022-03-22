@@ -93,6 +93,10 @@ def figer_to_parquet():
         doc_dict['fine_grained_entities'] = fine_grained_entities
         # print(doc_dict)
         formatted_data['TRAINING'].append(doc_dict)
+
+    dataset = Dataset.create(
+            dataset_project=args['dataset_project'], dataset_name=args['dataset_name']
+    )
                     
     with codecs.open(os.path.join(gettempdir(), 'FIGER.json'), mode='w', encoding='utf-8',
                 errors='ignore') as fp:
@@ -122,10 +126,6 @@ def figer_to_parquet():
     train = train[~train.fine_grained_entities.str.len().eq(0)]
     val = val[~val.fine_grained_entities.str.len().eq(0)]
     test = test[~test.fine_grained_entities.str.len().eq(0)]
-
-    dataset = Dataset.create(
-            dataset_project=args['dataset_project'], dataset_name=args['dataset_name']
-    )
 
     #train df json
     train_dict = {'TRAINING': []}
