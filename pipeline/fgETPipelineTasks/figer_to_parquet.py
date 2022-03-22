@@ -17,7 +17,7 @@ def figer_to_parquet():
     TASK_NAME = "dataset_parsing_to_parquet"
     DATASET_PROJECT = "datasets/multimodal"
     DATASET_PARTIAL_NAME = "FIGER raw data"
-    DATASET_NAME = "fgET FIGER data"
+    DATASET_NAME = "fgET FIGER parquet data"
 
     # Task.add_requirements("-rrequirements.txt")
     Task.force_requirements_env_freeze(force=True, requirements_file='requirements.txt')
@@ -127,41 +127,41 @@ def figer_to_parquet():
     val = val[~val.fine_grained_entities.str.len().eq(0)]
     test = test[~test.fine_grained_entities.str.len().eq(0)]
 
-    #train df json
-    train_dict = {'TRAINING': []}
+    # #train df json
+    # train_dict = {'TRAINING': []}
 
-    for source in train['source'].tolist():
-        train_dict['TRAINING'].append({'source':df.loc[df['source'] == source].iloc[0]['source'],'text':df.loc[df['source'] == source].iloc[0]['text'],'tokens':df.loc[df['source'] == source].iloc[0]['tokens'],'fine_grained_entities':df.loc[df['source'] == source].iloc[0]['fine_grained_entities']})
+    # for source in train['source'].tolist():
+    #     train_dict['TRAINING'].append({'source':df.loc[df['source'] == source].iloc[0]['source'],'text':df.loc[df['source'] == source].iloc[0]['text'],'tokens':df.loc[df['source'] == source].iloc[0]['tokens'],'fine_grained_entities':df.loc[df['source'] == source].iloc[0]['fine_grained_entities']})
 
-    with codecs.open(os.path.join(gettempdir(), 'train.json'), mode='w', encoding='utf-8',
-                errors='ignore') as fp:
-        json.dump(train_dict, fp=fp, ensure_ascii=False, indent = 4)
+    # with codecs.open(os.path.join(gettempdir(), 'train.json'), mode='w', encoding='utf-8',
+    #             errors='ignore') as fp:
+    #     json.dump(train_dict, fp=fp, ensure_ascii=False, indent = 4)
 
-    dataset.add_files(os.path.join(gettempdir(), 'train.json'))
+    # dataset.add_files(os.path.join(gettempdir(), 'train.json'))
 
-    #val df json
-    val_dict = {'VALIDATION': []}
+    # #val df json
+    # val_dict = {'VALIDATION': []}
 
-    for source in val['source'].tolist():
-        val_dict['VALIDATION'].append({'source':df.loc[df['source'] == source].iloc[0]['source'],'text':df.loc[df['source'] == source].iloc[0]['text'],'tokens':df.loc[df['source'] == source].iloc[0]['tokens'],'fine_grained_entities':df.loc[df['source'] == source].iloc[0]['fine_grained_entities']})
+    # for source in val['source'].tolist():
+    #     val_dict['VALIDATION'].append({'source':df.loc[df['source'] == source].iloc[0]['source'],'text':df.loc[df['source'] == source].iloc[0]['text'],'tokens':df.loc[df['source'] == source].iloc[0]['tokens'],'fine_grained_entities':df.loc[df['source'] == source].iloc[0]['fine_grained_entities']})
 
-    with codecs.open(os.path.join(gettempdir(), 'validation.json'), mode='w', encoding='utf-8',
-                errors='ignore') as fp:
-        json.dump(val_dict, fp=fp, ensure_ascii=False, indent = 4)
+    # with codecs.open(os.path.join(gettempdir(), 'validation.json'), mode='w', encoding='utf-8',
+    #             errors='ignore') as fp:
+    #     json.dump(val_dict, fp=fp, ensure_ascii=False, indent = 4)
 
-    dataset.add_files(os.path.join(gettempdir(), 'validation.json'))
+    # dataset.add_files(os.path.join(gettempdir(), 'validation.json'))
 
-    #test df json
-    test_dict = {'TEST': []}
+    # #test df json
+    # test_dict = {'TEST': []}
 
-    for source in test['source'].tolist():
-        test_dict['TEST'].append({'source':df.loc[df['source'] == source].iloc[0]['source'],'text':df.loc[df['source'] == source].iloc[0]['text'],'tokens':df.loc[df['source'] == source].iloc[0]['tokens'],'fine_grained_entities':df.loc[df['source'] == source].iloc[0]['fine_grained_entities']})
+    # for source in test['source'].tolist():
+    #     test_dict['TEST'].append({'source':df.loc[df['source'] == source].iloc[0]['source'],'text':df.loc[df['source'] == source].iloc[0]['text'],'tokens':df.loc[df['source'] == source].iloc[0]['tokens'],'fine_grained_entities':df.loc[df['source'] == source].iloc[0]['fine_grained_entities']})
 
-    with codecs.open(os.path.join(gettempdir(), 'test.json'), mode='w', encoding='utf-8',
-                errors='ignore') as fp:
-        json.dump(test_dict, fp=fp, ensure_ascii=False, indent = 4)
+    # with codecs.open(os.path.join(gettempdir(), 'test.json'), mode='w', encoding='utf-8',
+    #             errors='ignore') as fp:
+    #     json.dump(test_dict, fp=fp, ensure_ascii=False, indent = 4)
 
-    dataset.add_files(os.path.join(gettempdir(), 'test.json'))
+    # dataset.add_files(os.path.join(gettempdir(), 'test.json'))
 
     #convert dataframes to parquet
     df.to_parquet(os.path.join(gettempdir(), 'figer_full.parquet'),engine='fastparquet')

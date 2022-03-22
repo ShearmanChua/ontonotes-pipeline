@@ -1,12 +1,15 @@
 import json
 import re
-import torch
-import model.constant as C
-from torch.utils.data import Dataset
-from allennlp.modules.elmo import batch_to_ids
-import dask.dataframe as dd
-import pandas as pd
 import ast
+
+import pandas as pd
+import dask.dataframe as dd
+import torch
+from torch.utils.data import Dataset
+from allennlp.modules.elmo import Elmo
+from allennlp.modules.elmo import batch_to_ids
+
+import model.constant as C
 
 DIGIT_PATTERN = re.compile('\d')
 
@@ -47,23 +50,22 @@ def mask_to_distance(mask, mask_len, decay=.1):
     return dist
 
 class FetDataset(Dataset):
-    def __init__(self, training_file_path,tokens_field,entities_field,label_stoi,gpu=False):
+    def __init__(self, training_file_path,tokens_field,entities_field,sentence_field,label_stoi,gpu=False):
         self.gpu = gpu
         self.pad = C.PAD_INDEX
         self.entities_field = entities_field
         self.tokens_field = tokens_field
+        self.sentence_field = sentence_field
         self.label_stoi = label_stoi
         self.label_size = len(label_stoi)
         # self.data = dd.read_parquet(training_file_path,engine='fastparquet')
-        # self.client = Client()
-        # self.data = self.client.persist(self.data)
         self.data= pd.read_parquet(training_file_path, engine="fastparquet")
     def __getitem__(self, idx):
         # data_transformed = self.data.loc[idx].compute()
         # data_transformed = data_transformed.to_dict('records')
         # record = data_transformed[0]
         record = self.data.iloc[idx]
-        record_dict = {"tokens":record[self.tokens_field],"entities":record[self.entities_field]}
+        record_dict = {"tokens":record[self.tokens_field],"entities":record[self.entities_field],"sentence":record[self.sentence_field]}
         instance = self.process_instance(record_dict,self.label_stoi)
         # instance = ast.literal_eval(record['instance'])
         return instance
