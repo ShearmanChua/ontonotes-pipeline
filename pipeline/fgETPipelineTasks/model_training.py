@@ -55,6 +55,7 @@ def model_training():
     arg_parser.add_argument('--test_file_name', type=str, default='test.parquet')
     arg_parser.add_argument('--tokens_field', type=str, default='tokens')
     arg_parser.add_argument('--entities_field', type=str, default='fine_grained_entities')
+    arg_parser.add_argument('--sentence_field', type=str, default='text')
     arg_parser.add_argument('--results_dataset_project', type=str, default='datasets/multimodal')
     arg_parser.add_argument('--results_dataset_name', type=str, default='fgET results 80 epochs 1e-5 batch 64 500k (elmo refractored)')
     arg_parser.add_argument('--train_from_checkpoint', type=bool, default=False)
@@ -105,7 +106,7 @@ def model_training():
         preprocessor = PreProcessor(elmo_option=elmo_option,
                                     elmo_weight=elmo_weight,
                                     elmo_dropout=args.elmo_dropout)
-        test_set = FetDataset(preprocessor,test_file_path,args.tokens_field,args.entities_field,labels_strtoidx,args.gpu)
+        test_set = FetDataset(preprocessor,test_file_path,args.tokens_field,args.entities_field,args.sentence_field,labels_strtoidx,args.gpu)
         test_loader = DataLoader(test_set, batch_size=args.batch_size, shuffle=False,collate_fn=preprocessor.batch_process,num_workers=num_worker)
 
         # Set GPU device
@@ -201,12 +202,12 @@ def model_training():
                                 elmo_weight=elmo_weight,
                                 elmo_dropout=args.elmo_dropout)
     
-    train_set = FetDataset(preprocessor,train_file_path,args.tokens_field,args.entities_field,labels_strtoidx,args.gpu)
+    train_set = FetDataset(preprocessor,train_file_path,args.tokens_field,args.entities_field,args.sentence_field,labels_strtoidx,args.gpu)
     train_loader = DataLoader(train_set, batch_size=args.batch_size, shuffle=False,collate_fn=preprocessor.batch_process,num_workers=num_worker)
-    val_set = FetDataset(preprocessor,val_file_path,args.tokens_field,args.entities_field,labels_strtoidx,args.gpu)
+    val_set = FetDataset(preprocessor,val_file_path,args.tokens_field,args.entities_field,args.sentence_field,labels_strtoidx,args.gpu)
     val_loader = DataLoader(val_set, batch_size=args.batch_size, shuffle=False,collate_fn=preprocessor.batch_process,num_workers=num_worker)
     if args.test:
-        test_set = FetDataset(preprocessor,test_file_path,args.tokens_field,args.entities_field,labels_strtoidx,args.gpu)
+        test_set = FetDataset(preprocessor,test_file_path,args.tokens_field,args.entities_field,args.sentence_field,labels_strtoidx,args.gpu)
         test_loader = DataLoader(test_set, batch_size=args.batch_size, shuffle=False,collate_fn=preprocessor.batch_process,num_workers=num_worker)
 
 
