@@ -38,7 +38,7 @@ class PreProcessor():
         if gpu:
             self.elmo.cuda()
 
-        self.elmo._elmo._modules['_elmo_lstm']._elmo_lstm.stateful = False
+        # self.elmo._elmo._modules['_elmo_lstm']._elmo_lstm.stateful = False
 
         self.pad = C.PAD_INDEX
 
