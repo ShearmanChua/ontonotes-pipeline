@@ -27,7 +27,9 @@ def mask_to_distance(mask, mask_len, decay=.1):
     return dist
 
 class PreProcessor():
-    def __init__(self,elmo_option,
+    def __init__(self,
+                 label_stoi,
+                 elmo_option,
                  elmo_weight,
                  elmo_dropout=.5,
                  gpu=False):
@@ -40,6 +42,7 @@ class PreProcessor():
             param.requires_grad = False
 
         self.elmo_dim = self.elmo.get_output_dim()
+        self.label_size = len(label_stoi)
 
         # if gpu:
         #     self.elmo.cuda()
@@ -136,7 +139,7 @@ class PreProcessor():
             batch_men_ids.extend(men_ids)
             batch_mentions.extend(mentions)
             batch_mentions.extend(sentence)
-            
+
         batch_elmo_embeddings = self.get_elmo_embeddings(batch_char_ids,batch_gathers)
 
         return (batch_elmo_embeddings, batch_labels, batch_men_mask, batch_ctx_mask,

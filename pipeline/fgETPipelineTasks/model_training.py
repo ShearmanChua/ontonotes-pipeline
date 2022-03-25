@@ -103,7 +103,8 @@ def model_training():
         print("------------ Performing model testing!!!! ------------")
 
         test_file_path = get_clearml_file_path(args.fgETdata_dataset_project,args.fgETdata_dataset_name,args.test_file_name)
-        preprocessor = PreProcessor(elmo_option=elmo_option,
+        preprocessor = PreProcessor(labels_strtoidx,
+                                    elmo_option=elmo_option,
                                     elmo_weight=elmo_weight,
                                     elmo_dropout=args.elmo_dropout)
         test_set = FetDataset(preprocessor,test_file_path,args.tokens_field,args.entities_field,args.sentence_field,labels_strtoidx,args.gpu)
@@ -198,7 +199,8 @@ def model_training():
     val_file_path = get_clearml_file_path(args.fgETdata_dataset_project,args.fgETdata_dataset_name,args.val_file_name)
     test_file_path = get_clearml_file_path(args.fgETdata_dataset_project,args.fgETdata_dataset_name,args.test_file_name)
 
-    preprocessor = PreProcessor(elmo_option=elmo_option,
+    preprocessor = PreProcessor(labels_strtoidx,
+                                elmo_option=elmo_option,
                                 elmo_weight=elmo_weight,
                                 elmo_dropout=args.elmo_dropout)
     
