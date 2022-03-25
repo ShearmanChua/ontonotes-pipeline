@@ -446,6 +446,7 @@ def run_test(test_loader,model,logger,best_scores,gpu=False):
             elmo_embeddings, labels, men_masks, ctx_masks, dists, gathers, men_ids, mentions,sentences = batch
 
             if gpu:
+                elmo_embeddings = elmo_embeddings.to(device='cuda')
                 labels = torch.cuda.FloatTensor(labels)
                 men_masks = torch.cuda.FloatTensor(men_masks)
                 ctx_masks = torch.cuda.FloatTensor(ctx_masks)
