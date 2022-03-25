@@ -76,7 +76,7 @@ class PreProcessor():
         return (char_ids, labels_nbz, men_mask, ctx_mask, men_ids, mentions,sentence, anno_num,
                 seq_len)
 
-    def get_elmo_embeddings(self,elmo_ids):
+    def get_elmo_embeddings(self,elmo_ids,gathers):
         '''
         All pre-trained models expect input images normalized in the same way,
         i.e. mini-batches of 3-channel RGB images of shape (3 x H x W), where H and W are expected to be at least 224.
@@ -118,7 +118,6 @@ class PreProcessor():
             # Elmo Character ids
             batch_char_ids.append(char_ids + [[self.pad] * C.ELMO_MAX_CHAR_LEN
                                                 for _ in range(max_seq_len - seq_len)])
-            batch_elmo_embeddings = self.get_elmo_embeddings(batch_char_ids)
             # Instance labels
             for ls in labels:
                 batch_labels.append([1 if l in ls else 0
@@ -137,6 +136,8 @@ class PreProcessor():
             batch_men_ids.extend(men_ids)
             batch_mentions.extend(mentions)
             batch_mentions.extend(sentence)
+            
+        batch_elmo_embeddings = self.get_elmo_embeddings(batch_char_ids,batch_gathers)
 
         return (batch_elmo_embeddings, batch_labels, batch_men_mask, batch_ctx_mask,
                 batch_dist, batch_gathers, batch_men_ids, batch_mentions,batch_sentences)
