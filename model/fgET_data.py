@@ -6,10 +6,10 @@ import pandas as pd
 import dask.dataframe as dd
 import torch
 from torch.utils.data import Dataset
-from allennlp.modules.elmo import Elmo
-from allennlp.modules.elmo import batch_to_ids
+# from allennlp.modules.elmo import Elmo
+# from allennlp.modules.elmo import batch_to_ids
 
-import model.constant as C
+# import model.constant as C
 
 DIGIT_PATTERN = re.compile('\d')
 
@@ -50,9 +50,17 @@ def mask_to_distance(mask, mask_len, decay=.1):
     return dist
 
 class FetDataset(Dataset):
-    def __init__(self, training_file_path,tokens_field,entities_field,sentence_field,label_stoi,gpu=False):
+    def __init__(self,
+                 preprocessor,
+                 training_file_path,
+                 tokens_field,
+                 entities_field,
+                 sentence_field,
+                 label_stoi,
+                 gpu=False):
+        self.preprocessor = preprocessor
         self.gpu = gpu
-        self.pad = C.PAD_INDEX
+        # self.pad = C.PAD_INDEX
         self.entities_field = entities_field
         self.tokens_field = tokens_field
         self.sentence_field = sentence_field
@@ -66,78 +74,78 @@ class FetDataset(Dataset):
         # record = data_transformed[0]
         record = self.data.iloc[idx]
         record_dict = {"tokens":record[self.tokens_field],"entities":record[self.entities_field],"sentence":record[self.sentence_field]}
-        instance = self.process_instance(record_dict,self.label_stoi)
+        instance = self.preprocessor.process_instance(record_dict,self.label_stoi)
         # instance = ast.literal_eval(record['instance'])
         return instance
 
     def __len__(self):
         return len(self.data)
 
-    def process_instance(self,inst, label_stoi):
-        tokens = inst['tokens']
-        tokens = [C.TOK_REPLACEMENT.get(t, t) for t in tokens]
-        seq_len = len(tokens)
-        char_ids = batch_to_ids([tokens])[0].tolist()
-        labels_nbz, men_mask, ctx_mask, men_ids, mentions = [], [], [], [], []
-        annotations = inst['entities']
-        anno_num = len(annotations)
-        for annotation in annotations:
-            mention_id = annotation['mention_id']
-            labels = annotation['labels']
-            labels = [l.replace('geograpy', 'geography') for l in labels]
-            start = annotation['start']
-            end = annotation['end']
+    # def process_instance(self,inst, label_stoi):
+    #     tokens = inst['tokens']
+    #     tokens = [C.TOK_REPLACEMENT.get(t, t) for t in tokens]
+    #     seq_len = len(tokens)
+    #     char_ids = batch_to_ids([tokens])[0].tolist()
+    #     labels_nbz, men_mask, ctx_mask, men_ids, mentions = [], [], [], [], []
+    #     annotations = inst['entities']
+    #     anno_num = len(annotations)
+    #     for annotation in annotations:
+    #         mention_id = annotation['mention_id']
+    #         labels = annotation['labels']
+    #         labels = [l.replace('geograpy', 'geography') for l in labels]
+    #         start = annotation['start']
+    #         end = annotation['end']
 
-            men_ids.append(mention_id)
-            mentions.append(annotation['mention'])
-            labels = [label_stoi[l] for l in labels if l in label_stoi]
-            labels_nbz.append(labels)
-            men_mask.append([1 if i >= start and i < end else 0
-                                for i in range(seq_len)])
-            ctx_mask.append([1 if i < start or i >= end else 0
-                                for i in range(seq_len)])
-        return (char_ids, labels_nbz, men_mask, ctx_mask, men_ids, mentions, anno_num,
-                seq_len)
+    #         men_ids.append(mention_id)
+    #         mentions.append(annotation['mention'])
+    #         labels = [label_stoi[l] for l in labels if l in label_stoi]
+    #         labels_nbz.append(labels)
+    #         men_mask.append([1 if i >= start and i < end else 0
+    #                             for i in range(seq_len)])
+    #         ctx_mask.append([1 if i < start or i >= end else 0
+    #                             for i in range(seq_len)])
+    #     return (char_ids, labels_nbz, men_mask, ctx_mask, men_ids, mentions, anno_num,
+    #             seq_len)
 
-    def batch_process(self, batch):
+    # def batch_process(self, batch):
         
-        # Process the batch
-        seq_lens = [x[-1] for x in batch]
-        max_seq_len = max(seq_lens)
+    #     # Process the batch
+    #     seq_lens = [x[-1] for x in batch]
+    #     max_seq_len = max(seq_lens)
 
-        batch_char_ids = []
-        batch_labels = []
-        batch_men_mask = []
-        batch_dist = []
-        batch_ctx_mask = []
-        batch_gathers = []
-        batch_men_ids = []
-        batch_mentions = []
+    #     batch_char_ids = []
+    #     batch_labels = []
+    #     batch_men_mask = []
+    #     batch_dist = []
+    #     batch_ctx_mask = []
+    #     batch_gathers = []
+    #     batch_men_ids = []
+    #     batch_mentions = []
 
-        for inst_idx, inst in enumerate(batch):
+    #     for inst_idx, inst in enumerate(batch):
 
-            char_ids, labels, men_mask, ctx_mask, men_ids, mentions, anno_num, seq_len = inst
+    #         char_ids, labels, men_mask, ctx_mask, men_ids, mentions, anno_num, seq_len = inst
 
-            # Elmo Character ids
-            batch_char_ids.append(char_ids + [[self.pad] * C.ELMO_MAX_CHAR_LEN
-                                              for _ in range(max_seq_len - seq_len)])
-            # Instance labels
-            for ls in labels:
-                batch_labels.append([1 if l in ls else 0
-                                     for l in range(self.label_size)])
-            # mention masks
-            for mask in men_mask:
-                batch_men_mask.append(mask + [self.pad] * (max_seq_len - seq_len))
-                batch_dist.append(mask_to_distance(mask, seq_len)
-                                  + [self.pad] * (max_seq_len - seq_len))
-            #context masks
-            for mask in ctx_mask:
-                batch_ctx_mask.append(mask + [self.pad] * (max_seq_len - seq_len))
+    #         # Elmo Character ids
+    #         batch_char_ids.append(char_ids + [[self.pad] * C.ELMO_MAX_CHAR_LEN
+    #                                           for _ in range(max_seq_len - seq_len)])
+    #         # Instance labels
+    #         for ls in labels:
+    #             batch_labels.append([1 if l in ls else 0
+    #                                  for l in range(self.label_size)])
+    #         # mention masks
+    #         for mask in men_mask:
+    #             batch_men_mask.append(mask + [self.pad] * (max_seq_len - seq_len))
+    #             batch_dist.append(mask_to_distance(mask, seq_len)
+    #                               + [self.pad] * (max_seq_len - seq_len))
+    #         #context masks
+    #         for mask in ctx_mask:
+    #             batch_ctx_mask.append(mask + [self.pad] * (max_seq_len - seq_len))
 
-            batch_gathers.extend([inst_idx] * anno_num)
+    #         batch_gathers.extend([inst_idx] * anno_num)
 
-            batch_men_ids.extend(men_ids)
-            batch_mentions.extend(mentions)
+    #         batch_men_ids.extend(men_ids)
+    #         batch_mentions.extend(mentions)
 
-        return (batch_char_ids, batch_labels, batch_men_mask, batch_ctx_mask,
-                batch_dist, batch_gathers, batch_men_ids, batch_mentions)
+    #     return (batch_char_ids, batch_labels, batch_men_mask, batch_ctx_mask,
+    #             batch_dist, batch_gathers, batch_men_ids, batch_mentions)

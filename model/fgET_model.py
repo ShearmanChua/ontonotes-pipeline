@@ -2,16 +2,13 @@ import math
 
 import torch
 import torch.nn as nn
-from allennlp.modules.elmo import Elmo
 from pytorch_pretrained_bert import BertAdam
 
 class fgET(nn.Module):
 
     def __init__(self,
                  label_size,
-                 elmo_option,
-                 elmo_weight,
-                 elmo_dropout=.5,
+                 elmo_dim,
                  repr_dropout=.2,
                  dist_dropout=.5,
                  latent_size=0,
@@ -19,11 +16,7 @@ class fgET(nn.Module):
                  ):
         super(fgET, self).__init__()
         self.label_size = label_size
-        self.elmo = Elmo(elmo_option, elmo_weight, 1,
-                         dropout=elmo_dropout)
-        for param in self.elmo.parameters():
-            param.requires_grad = False
-        self.elmo_dim = self.elmo.get_output_dim()
+        self.elmo_dim = elmo_dim
 
         self.attn_dim = 1
         self.attn_inner_dim = self.elmo_dim
@@ -80,28 +73,24 @@ class fgET(nn.Module):
         mat_u = torch.FloatTensor(mat_u).transpose(0, 1)
         return torch.matmul(mat_u, mat_s) #.transpose(0, 1)
 
-    def forward_nn(self, inputs, men_mask, ctx_mask, dist, gathers):
+    def forward_nn(self, elmo_embeddings, men_mask, ctx_mask, dist, gathers):
         # Elmo contextualized embeddings
-        elmo_outputs = self.elmo(inputs)['elmo_representations'][0]
-        _, seq_len, feat_dim = elmo_outputs.size()
-        gathers = gathers.unsqueeze(-1).unsqueeze(-1).expand(-1, seq_len, feat_dim)
-        elmo_outputs = torch.gather(elmo_outputs, 0, gathers)
 
-        men_attn = self.men_attn_linear_m(elmo_outputs).tanh()
+        men_attn = self.men_attn_linear_m(elmo_embeddings).tanh()
         men_attn = self.men_attn_linear_o(men_attn)
         men_attn = men_attn + (1.0 - men_mask.unsqueeze(-1)) * -10000.0
         men_attn = men_attn.softmax(1)
-        men_repr = (elmo_outputs * men_attn).sum(1)
+        men_repr = (elmo_embeddings * men_attn).sum(1)
 
         dist = self.dist_dropout(dist)
-        ctx_attn = (self.ctx_attn_linear_c(elmo_outputs) +
+        ctx_attn = (self.ctx_attn_linear_c(elmo_embeddings) +
                     self.ctx_attn_linear_m(men_repr.unsqueeze(1)) +
                     self.ctx_attn_linear_d(dist.unsqueeze(2))).tanh()
         ctx_attn = self.ctx_attn_linear_o(ctx_attn)
 
         ctx_attn = ctx_attn + (1.0 - ctx_mask.unsqueeze(-1)) * -10000.0
         ctx_attn = ctx_attn.softmax(1)
-        ctx_repr = (elmo_outputs * ctx_attn).sum(1)
+        ctx_repr = (elmo_embeddings * ctx_attn).sum(1)
 
         # Classification
         final_repr = torch.cat([men_repr, ctx_repr], dim=1)
@@ -115,8 +104,8 @@ class fgET(nn.Module):
 
         return outputs, outputs_latent
 
-    def forward(self, inputs, labels, men_mask, ctx_mask, dist, gathers, inst_weights=None):
-        outputs, outputs_latent = self.forward_nn(inputs, men_mask, ctx_mask, dist, gathers)
+    def forward(self, elmo_embeddings, labels, men_mask, ctx_mask, dist, gathers, inst_weights=None):
+        outputs, outputs_latent = self.forward_nn(elmo_embeddings, men_mask, ctx_mask, dist, gathers)
         loss = self.criterion(outputs, labels)
         return loss
 
@@ -136,9 +125,9 @@ class fgET(nn.Module):
                 preds[i][h] = 1
         return preds
 
-    def predict(self, inputs, men_mask, ctx_mask, dist, gathers, predict_top=True):
+    def predict(self, elmo_embeddings, men_mask, ctx_mask, dist, gathers, predict_top=True):
         self.eval()
-        outputs, _ = self.forward_nn(inputs, men_mask, ctx_mask, dist, gathers)
+        outputs, _ = self.forward_nn(elmo_embeddings, men_mask, ctx_mask, dist, gathers)
         scores = outputs.sigmoid()
         predictions = self._prediction(outputs, predict_top=predict_top)
         self.train()

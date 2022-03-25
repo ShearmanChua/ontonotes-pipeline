@@ -78,6 +78,7 @@ def model_training():
 
     from model.fgET_model import fgET
     from model.fgET_data import FetDataset
+    from model.fgET_preprocessor import PreProcessor
 
     timestamp = time.strftime('%Y%m%d_%H%M%S', time.localtime())
     results_dataset_name = args.results_dataset_name + ' ' + timestamp
@@ -101,8 +102,11 @@ def model_training():
         print("------------ Performing model testing!!!! ------------")
 
         test_file_path = get_clearml_file_path(args.fgETdata_dataset_project,args.fgETdata_dataset_name,args.test_file_name)
-        test_set = FetDataset(test_file_path,args.tokens_field,args.entities_field,labels_strtoidx,args.gpu)
-        test_loader = DataLoader(test_set, batch_size=args.batch_size, shuffle=False,collate_fn=test_set.batch_process,num_workers=num_worker)
+        preprocessor = PreProcessor(elmo_option=elmo_option,
+                                    elmo_weight=elmo_weight,
+                                    elmo_dropout=args.elmo_dropout)
+        test_set = FetDataset(preprocessor,test_file_path,args.tokens_field,args.entities_field,labels_strtoidx,args.gpu)
+        test_loader = DataLoader(test_set, batch_size=args.batch_size, shuffle=False,collate_fn=preprocessor.batch_process,num_workers=num_worker)
 
         # Set GPU device
         gpu = torch.cuda.is_available() and args.gpu
@@ -111,9 +115,7 @@ def model_training():
 
         # Build model
         model = fgET(label_size,
-                    elmo_option=elmo_option,
-                    elmo_weight=elmo_weight,
-                    elmo_dropout=args.elmo_dropout,
+                    elmo_dim = preprocessor.elmo_dim,
                     repr_dropout=args.repr_dropout,
                     dist_dropout=args.dist_dropout,
                     latent_size=args.latent_size,
@@ -145,12 +147,13 @@ def model_training():
 
         results,best_scores = run_test(test_loader,model,logger,best_scores,args.gpu)
         collated_results = {'results':[]}
-        for gold, pred, men_id,mention,score in zip(results['gold'],results['pred'],results['ids'],results['mentions'],results['scores']):
+        for gold, pred, men_id,mention,sentence,score in zip(results['gold'],results['pred'],results['ids'],results['mentions'],results['sentence'],results['scores']):
                 arranged_results = dict()
                 gold_labels = [labels_idxtostr[i] for i, l in enumerate(gold) if l]
                 pred_labels = [labels_idxtostr[i] for i, l in enumerate(pred) if l]
                 arranged_results['mention_id'] = men_id
                 arranged_results['mention'] = mention
+                arranged_results['sentence'] = sentence
                 arranged_results['gold'] = gold_labels
                 arranged_results['predictions'] = pred_labels
                 arranged_results['scores'] = [score[i]for i, l in enumerate(pred) if l]
@@ -194,13 +197,17 @@ def model_training():
     val_file_path = get_clearml_file_path(args.fgETdata_dataset_project,args.fgETdata_dataset_name,args.val_file_name)
     test_file_path = get_clearml_file_path(args.fgETdata_dataset_project,args.fgETdata_dataset_name,args.test_file_name)
 
-    train_set = FetDataset(train_file_path,args.tokens_field,args.entities_field,labels_strtoidx,args.gpu)
-    train_loader = DataLoader(train_set, batch_size=args.batch_size, shuffle=False,collate_fn=train_set.batch_process,num_workers=num_worker)
-    val_set = FetDataset(val_file_path,args.tokens_field,args.entities_field,labels_strtoidx,args.gpu)
-    val_loader = DataLoader(val_set, batch_size=args.batch_size, shuffle=False,collate_fn=val_set.batch_process,num_workers=num_worker)
+    preprocessor = PreProcessor(elmo_option=elmo_option,
+                                elmo_weight=elmo_weight,
+                                elmo_dropout=args.elmo_dropout)
+    
+    train_set = FetDataset(preprocessor,train_file_path,args.tokens_field,args.entities_field,labels_strtoidx,args.gpu)
+    train_loader = DataLoader(train_set, batch_size=args.batch_size, shuffle=False,collate_fn=preprocessor.batch_process,num_workers=num_worker)
+    val_set = FetDataset(preprocessor,val_file_path,args.tokens_field,args.entities_field,labels_strtoidx,args.gpu)
+    val_loader = DataLoader(val_set, batch_size=args.batch_size, shuffle=False,collate_fn=preprocessor.batch_process,num_workers=num_worker)
     if args.test:
-        test_set = FetDataset(test_file_path,args.tokens_field,args.entities_field,labels_strtoidx,args.gpu)
-        test_loader = DataLoader(test_set, batch_size=args.batch_size, shuffle=False,collate_fn=test_set.batch_process,num_workers=num_worker)
+        test_set = FetDataset(preprocessor,test_file_path,args.tokens_field,args.entities_field,labels_strtoidx,args.gpu)
+        test_loader = DataLoader(test_set, batch_size=args.batch_size, shuffle=False,collate_fn=preprocessor.batch_process,num_workers=num_worker)
 
 
     # Set GPU device
@@ -210,9 +217,7 @@ def model_training():
 
     # Build model
     model = fgET(label_size,
-                elmo_option=elmo_option,
-                elmo_weight=elmo_weight,
-                elmo_dropout=args.elmo_dropout,
+                elmo_dim = preprocessor.elmo_dim,
                 repr_dropout=args.repr_dropout,
                 dist_dropout=args.dist_dropout,
                 latent_size=args.latent_size,
@@ -221,7 +226,7 @@ def model_training():
     if gpu:
         model.cuda()
 
-    torch.jit.script(model)
+    torchscript = torch.jit.script(model)
 
     total_step = args.max_epoch * len(train_loader)
     optimizer = model.configure_optimizers(args.weight_decay,args.lr,total_step)
@@ -251,12 +256,13 @@ def model_training():
     if args.test:
        results,best_scores = run_test(test_loader,model,logger,best_scores,args.gpu)
        collated_results = {'results':[]}
-       for gold, pred, men_id,mention,score in zip(results['gold'],results['pred'],results['ids'],results['mentions'],results['scores']):
+       for gold, pred, men_id,mention,sentence,score in zip(results['gold'],results['pred'],results['ids'],results['mentions'],results['sentence'],results['scores']):
             arranged_results = dict()
             gold_labels = [labels_idxtostr[i] for i, l in enumerate(gold) if l]
             pred_labels = [labels_idxtostr[i] for i, l in enumerate(pred) if l]
             arranged_results['mention_id'] = men_id
             arranged_results['mention'] = mention
+            arranged_results['sentence'] = sentence
             arranged_results['gold'] = gold_labels
             arranged_results['predictions'] = pred_labels
             arranged_results['scores'] = [score[i]for i, l in enumerate(pred) if l]
@@ -312,10 +318,9 @@ def run_training(train_loader,validation_loader,model,optimizer,epochs,logger,st
         print("Training step...")
         for batch in train_loader:
 
-            elmos, labels, men_masks, ctx_masks, dists, gathers, men_ids, mentions = batch
+            elmo_embeddings, labels, men_masks, ctx_masks, dists, gathers, men_ids, mentions,sentences = batch
 
             if gpu:
-                elmos = torch.cuda.LongTensor(elmos)
                 labels = torch.cuda.FloatTensor(labels)
                 men_masks = torch.cuda.FloatTensor(men_masks)
                 ctx_masks = torch.cuda.FloatTensor(ctx_masks)
@@ -323,7 +328,6 @@ def run_training(train_loader,validation_loader,model,optimizer,epochs,logger,st
                 dists = torch.cuda.FloatTensor(dists)
 
             else:
-                elmos = torch.LongTensor(elmos)
                 labels = torch.FloatTensor(labels)
                 men_masks = torch.FloatFloatTensorTensor(men_masks)
                 ctx_masks = torch.LongTensor(ctx_masks)
@@ -332,7 +336,7 @@ def run_training(train_loader,validation_loader,model,optimizer,epochs,logger,st
 
             progress.update(1)
             optimizer.zero_grad()
-            loss = model.forward(elmos, labels, men_masks, ctx_masks, dists,
+            loss = model.forward(elmo_embeddings, labels, men_masks, ctx_masks, dists,
                                  gathers, None)
 
             loss.backward()
@@ -351,10 +355,9 @@ def run_training(train_loader,validation_loader,model,optimizer,epochs,logger,st
         with torch.no_grad():
             for batch in validation_loader:
 
-                elmos, labels, men_masks, ctx_masks, dists, gathers, men_ids, mentions = batch
+                elmo_embeddings, labels, men_masks, ctx_masks, dists, gathers, men_ids, mentions,sentences = batch
 
                 if gpu:
-                    elmos = torch.cuda.LongTensor(elmos)
                     labels = torch.cuda.FloatTensor(labels)
                     men_masks = torch.cuda.FloatTensor(men_masks)
                     ctx_masks = torch.cuda.FloatTensor(ctx_masks)
@@ -362,7 +365,6 @@ def run_training(train_loader,validation_loader,model,optimizer,epochs,logger,st
                     dists = torch.cuda.FloatTensor(dists)
 
                 else:
-                    elmos = torch.LongTensor(elmos)
                     labels = torch.FloatTensor(labels)
                     men_masks = torch.FloatFloatTensorTensor(men_masks)
                     ctx_masks = torch.LongTensor(ctx_masks)
@@ -372,12 +374,12 @@ def run_training(train_loader,validation_loader,model,optimizer,epochs,logger,st
 
                 progress.update(1)
 
-                preds,scores = model.predict(elmos, men_masks, ctx_masks, dists, gathers)
+                preds,scores = model.predict(elmo_embeddings, men_masks, ctx_masks, dists, gathers)
                 results['gold'].extend(labels.int().data.tolist())
                 results['pred'].extend(preds.int().data.tolist())
                 results['ids'].extend(men_ids)
 
-                loss = model.forward(elmos, labels, men_masks, ctx_masks, dists,
+                loss = model.forward(elmo_embeddings, labels, men_masks, ctx_masks, dists,
                                     gathers, None)
 
                 val_loss.append(loss.item())
@@ -436,10 +438,9 @@ def run_test(test_loader,model,logger,best_scores,gpu=False):
     with torch.no_grad():
         for batch in test_loader:
 
-            elmos, labels, men_masks, ctx_masks, dists, gathers, men_ids, mentions = batch
+            elmo_embeddings, labels, men_masks, ctx_masks, dists, gathers, men_ids, mentions,sentences = batch
 
             if gpu:
-                elmos = torch.cuda.LongTensor(elmos)
                 labels = torch.cuda.FloatTensor(labels)
                 men_masks = torch.cuda.FloatTensor(men_masks)
                 ctx_masks = torch.cuda.FloatTensor(ctx_masks)
@@ -447,7 +448,6 @@ def run_test(test_loader,model,logger,best_scores,gpu=False):
                 dists = torch.cuda.FloatTensor(dists)
 
             else:
-                elmos = torch.LongTensor(elmos)
                 labels = torch.FloatTensor(labels)
                 men_masks = torch.FloatFloatTensorTensor(men_masks)
                 ctx_masks = torch.LongTensor(ctx_masks)
@@ -457,12 +457,13 @@ def run_test(test_loader,model,logger,best_scores,gpu=False):
 
             progress.update(1)
 
-            preds,scores = model.predict(elmos, men_masks, ctx_masks, dists, gathers)
+            preds,scores = model.predict(elmo_embeddings, men_masks, ctx_masks, dists, gathers)
             results['gold'].extend(labels.int().data.tolist())
             results['pred'].extend(preds.int().data.tolist())
             results['scores'].extend(scores.tolist())
             results['ids'].extend(men_ids)
             results['mentions'].extend(mentions)
+            results['sentence'].extend(sentences)
 
     metrics = calculate_metrics(results['gold'], results['pred'])
     print('---------- Test set ----------')
