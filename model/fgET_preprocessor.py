@@ -41,8 +41,8 @@ class PreProcessor():
 
         self.elmo_dim = self.elmo.get_output_dim()
 
-        if gpu:
-            self.elmo.cuda()
+        # if gpu:
+        #     self.elmo.cuda()
 
         # self.elmo._elmo._modules['_elmo_lstm']._elmo_lstm.stateful = False
 
@@ -83,10 +83,10 @@ class PreProcessor():
         The images have to be loaded in to a range of [0, 1]
         and then normalized using mean = [0.485, 0.456, 0.406] and std = [0.229, 0.224, 0.225].
         '''
-        if torch.cuda.is_available():
-            elmo_ids = torch.cuda.LongTensor(elmo_ids)
-        else:
-            elmo_ids = torch.LongTensor(elmo_ids)
+        # if torch.cuda.is_available():
+        #     elmo_ids = torch.cuda.LongTensor(elmo_ids)
+        # else:
+        elmo_ids = torch.LongTensor(elmo_ids)
         elmo_outputs = self.elmo(elmo_ids)['elmo_representations'][0]
         _, seq_len, feat_dim = elmo_outputs.size()
         gathers = gathers.unsqueeze(-1).unsqueeze(-1).expand(-1, seq_len, feat_dim)
