@@ -90,6 +90,7 @@ class PreProcessor():
         #     elmo_ids = torch.cuda.LongTensor(elmo_ids)
         # else:
         elmo_ids = torch.LongTensor(elmo_ids)
+        gathers = torch.LongTensor(gathers)
         elmo_outputs = self.elmo(elmo_ids)['elmo_representations'][0]
         _, seq_len, feat_dim = elmo_outputs.size()
         gathers = gathers.unsqueeze(-1).unsqueeze(-1).expand(-1, seq_len, feat_dim)
