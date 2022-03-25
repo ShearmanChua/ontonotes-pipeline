@@ -77,6 +77,12 @@ def model_training():
     import torch
     from torch.utils.data import DataLoader
 
+    from torch.multiprocessing import Pool, Process, set_start_method
+    try:
+        set_start_method('spawn')
+    except RuntimeError:
+        pass
+
     from model.fgET_model import fgET
     from model.fgET_data import FetDataset
     from model.fgET_preprocessor import PreProcessor
