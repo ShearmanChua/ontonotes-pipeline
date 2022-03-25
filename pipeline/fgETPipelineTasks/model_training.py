@@ -545,7 +545,7 @@ def _get_last_child_dataset(dataset_project, dataset_name):
 if __name__ == '__main__':
     from torch.multiprocessing import Pool, Process, set_start_method
     try:
-        set_start_method('fork')
+        set_start_method('spawn')
     except RuntimeError:
         pass
     model_training()
