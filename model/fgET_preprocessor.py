@@ -4,6 +4,12 @@ from allennlp.modules.elmo import Elmo
 from allennlp.modules.elmo import batch_to_ids
 import torch
 
+from torch.multiprocessing import Pool, Process, set_start_method
+try:
+    set_start_method('spawn')
+except RuntimeError:
+    pass
+
 import model.constant as C
 
 DIGIT_PATTERN = re.compile('\d')
