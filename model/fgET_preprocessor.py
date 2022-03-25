@@ -86,11 +86,14 @@ class PreProcessor():
         The images have to be loaded in to a range of [0, 1]
         and then normalized using mean = [0.485, 0.456, 0.406] and std = [0.229, 0.224, 0.225].
         '''
-        # if torch.cuda.is_available():
-        #     elmo_ids = torch.cuda.LongTensor(elmo_ids)
-        # else:
-        elmo_ids = torch.LongTensor(elmo_ids)
-        gathers = torch.LongTensor(gathers)
+        if torch.cuda.is_available():
+            elmo_ids = torch.cuda.LongTensor(elmo_ids)
+            gathers = torch.cuda.LongTensor(gathers)
+            self.elmo.cuda()
+        else:
+            elmo_ids = torch.LongTensor(elmo_ids)
+            gathers = torch.LongTensor(gathers)
+            self.elmo.to('cpu')
         elmo_outputs = self.elmo(elmo_ids)['elmo_representations'][0]
         _, seq_len, feat_dim = elmo_outputs.size()
         gathers = gathers.unsqueeze(-1).unsqueeze(-1).expand(-1, seq_len, feat_dim)
