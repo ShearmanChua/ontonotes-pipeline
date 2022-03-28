@@ -57,11 +57,11 @@ def model_training():
     arg_parser.add_argument('--entities_field', type=str, default='fine_grained_entities')
     arg_parser.add_argument('--sentence_field', type=str, default='text')
     arg_parser.add_argument('--results_dataset_project', type=str, default='datasets/multimodal')
-    arg_parser.add_argument('--results_dataset_name', type=str, default='fgET results 80 epochs 1e-5 batch 64 500k (elmo refractored)')
+    arg_parser.add_argument('--results_dataset_name', type=str, default='fgET results elmo refractored')
     arg_parser.add_argument('--train_from_checkpoint', type=bool, default=False)
     arg_parser.add_argument('--test_from_checkpoint', type=bool, default=False)
     arg_parser.add_argument('--model_checkpoint_project', type=str, default='datasets/multimodal')
-    arg_parser.add_argument('--model_checkpoint_dataset_name', type=str, default='fgET results 80 epochs 1e-5 batch 64 500k (elmo refractored)')
+    arg_parser.add_argument('--model_checkpoint_dataset_name', type=str, default='fgET results elmo refractored')
     arg_parser.add_argument('--model_checkpoint_file_name', type=str, default='best_mac.mdl')
 
     args = arg_parser.parse_args()
