@@ -498,6 +498,8 @@ def run_test(test_loader,model,logger,best_scores,gpu=False):
 
 def get_clearml_file_path(dataset_project,dataset_name,file_name):
 
+    print("Getting files from: ",dataset_project,dataset_name,file_name)
+
     # get uploaded dataset from clearML
     dataset_dict = Dataset.list_datasets(
         dataset_project=dataset_project, partial_name=dataset_name, only_completed=False
