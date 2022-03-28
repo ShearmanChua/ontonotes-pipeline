@@ -142,7 +142,7 @@ class PreProcessor():
 
             batch_men_ids.extend(men_ids)
             batch_mentions.extend(mentions)
-            batch_mentions.extend(sentence)
+            batch_sentences.extend(sentence)
 
         batch_elmo_embeddings = self.get_elmo_embeddings(batch_char_ids,batch_gathers)
 
