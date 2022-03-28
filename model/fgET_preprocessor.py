@@ -122,6 +122,13 @@ class PreProcessor():
 
             char_ids, labels, men_mask, ctx_mask, men_ids, mentions,sentence, anno_num, seq_len = inst
 
+            string = ""
+  
+            # using join function join the list s by 
+            # separating words by str1
+            sentence = string.join(sentence)
+
+
             # Elmo Character ids
             batch_char_ids.append(char_ids + [[self.pad] * C.ELMO_MAX_CHAR_LEN
                                                 for _ in range(max_seq_len - seq_len)])
