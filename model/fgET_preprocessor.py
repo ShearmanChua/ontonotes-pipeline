@@ -122,11 +122,11 @@ class PreProcessor():
 
             char_ids, labels, men_mask, ctx_mask, men_ids, mentions,sentence, anno_num, seq_len = inst
 
-            string = ""
+            # string = ""
   
-            # using join function join the list s by 
-            # separating words by str1
-            sentence = string.join(sentence)
+            # # using join function join the list s by 
+            # # separating words by str1
+            # sentence = string.join(sentence)
 
 
             # Elmo Character ids
@@ -149,7 +149,7 @@ class PreProcessor():
 
             batch_men_ids.extend(men_ids)
             batch_mentions.extend(mentions)
-            batch_sentences.extend(sentence)
+            batch_sentences.append(sentence)
 
         batch_elmo_embeddings = self.get_elmo_embeddings(batch_char_ids,batch_gathers)
 
