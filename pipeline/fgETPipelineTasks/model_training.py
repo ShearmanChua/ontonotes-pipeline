@@ -323,6 +323,8 @@ def run_training(train_loader,validation_loader,model,optimizer,epochs,logger,st
 
             elmo_embeddings, labels, men_masks, ctx_masks, dists, gathers, men_ids, mentions,sentences = batch
 
+            print(sentences)
+
             if gpu:
                 elmo_embeddings = elmo_embeddings.to(device='cuda')
                 labels = torch.cuda.FloatTensor(labels)
