@@ -78,11 +78,14 @@ def figer_to_parquet():
         doc_dict['labels'] = []
         fine_grained_entities = []
         mention_count = 0
+        contains_level_2_entity = False
         for mention in doc['mentions']:
             mention_dict = dict()
             mention_dict['labels'] = mention['labels']
             for label in mention['labels']:
                 doc_dict['labels'].append(label)
+                if len(label.split('/')) >2:
+                    contains_level_2_entity = True
             mention_dict['start'] = mention['start']
             mention_dict['end'] = mention['end']
             mention_dict['mention'] = ' '.join(doc['tokens'][mention['start']:mention['end']])
@@ -91,6 +94,10 @@ def figer_to_parquet():
             mention_count += 1
         
         doc_dict['fine_grained_entities'] = fine_grained_entities
+        if contains_level_2_entity:
+            doc_dict['contains_level_2_entity'] = 'Yes'
+        else:
+            doc_dict['contains_level_2_entity'] = 'No'
         # print(doc_dict)
         formatted_data['TRAINING'].append(doc_dict)
 
@@ -111,6 +118,12 @@ def figer_to_parquet():
     json_object = json.dumps(training_records, indent = 4)
     df = pd.read_json(StringIO(json_object), orient ='index')
     print(df.head())
+    print(df.info())
+
+    df = df[df.contains_level_2_entity != 'No']
+    df = df.drop(['contains_level_2_entity'], axis = 1)
+    print(df.head())
+    print(df.info())
 
     # train, val, test split of dataframe
     train,val,test = np.split(df.sample(frac=1, random_state=42), [int(0.6*len(df)), int(0.8*len(df))])
