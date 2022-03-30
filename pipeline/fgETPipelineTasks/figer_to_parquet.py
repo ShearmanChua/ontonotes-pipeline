@@ -17,7 +17,7 @@ def figer_to_parquet():
     TASK_NAME = "dataset_parsing_to_parquet"
     DATASET_PROJECT = "datasets/multimodal"
     DATASET_PARTIAL_NAME = "FIGER raw data"
-    DATASET_NAME = "fgET FIGER parquet data"
+    DATASET_NAME = "fgET FIGER parquet data(level 2)"
 
     # Task.add_requirements("-rrequirements.txt")
     Task.force_requirements_env_freeze(force=True, requirements_file='requirements.txt')
