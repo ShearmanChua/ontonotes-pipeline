@@ -323,7 +323,10 @@ def run_training(train_loader,validation_loader,model,optimizer,epochs,logger,st
 
             elmo_embeddings, labels, men_masks, ctx_masks, dists, gathers, men_ids, mentions,sentences = batch
 
-            # print(sentences)
+            if epoch == 0:
+                for i in range(0,len(mentions)):
+                    print("Mention: ",mentions[i],"sentence: ",sentences[i])
+
 
             if gpu:
                 elmo_embeddings = elmo_embeddings.to(device='cuda')

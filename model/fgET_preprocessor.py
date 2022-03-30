@@ -60,6 +60,7 @@ class PreProcessor():
         labels_nbz, men_mask, ctx_mask, men_ids, mentions = [], [], [], [], []
         annotations = inst['entities']
         anno_num = len(annotations)
+        sentences = []
         for annotation in annotations:
             mention_id = annotation['mention_id']
             labels = annotation['labels']
@@ -75,8 +76,9 @@ class PreProcessor():
                                 for i in range(seq_len)])
             ctx_mask.append([1 if i < start or i >= end else 0
                                 for i in range(seq_len)])
+            sentences.append(sentence)
             
-        return (char_ids, labels_nbz, men_mask, ctx_mask, men_ids, mentions,sentence, anno_num,
+        return (char_ids, labels_nbz, men_mask, ctx_mask, men_ids, mentions,sentences, anno_num,
                 seq_len)
 
     def get_elmo_embeddings(self,elmo_ids,gathers):
@@ -120,7 +122,7 @@ class PreProcessor():
 
         for inst_idx, inst in enumerate(batch):
 
-            char_ids, labels, men_mask, ctx_mask, men_ids, mentions,sentence, anno_num, seq_len = inst
+            char_ids, labels, men_mask, ctx_mask, men_ids, mentions,sentences, anno_num, seq_len = inst
 
             # string = ""
   
@@ -149,7 +151,7 @@ class PreProcessor():
 
             batch_men_ids.extend(men_ids)
             batch_mentions.extend(mentions)
-            batch_sentences.append(sentence)
+            batch_sentences.extend(sentences)
 
         batch_elmo_embeddings = self.get_elmo_embeddings(batch_char_ids,batch_gathers)
 
