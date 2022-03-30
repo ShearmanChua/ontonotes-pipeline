@@ -188,6 +188,7 @@ def figer_to_parquet():
     dataset.add_files(os.path.join(gettempdir(), 'test.parquet'))
 
     dataset.upload(output_url='s3://experiment-logging/multimodal')
+    dataset.finalize()
 
 
 def new_mapping(figer_data_rows):
