@@ -31,7 +31,7 @@ def model_training():
     arg_parser.add_argument('--svd')
     arg_parser.add_argument('--lr', type=float, default=1e-5)
     arg_parser.add_argument('--max_epoch', type=int, default=80)
-    arg_parser.add_argument('--batch_size', type=int, default=64)
+    arg_parser.add_argument('--batch_size', type=int, default=32)
     arg_parser.add_argument('--elmo_dataset_project', type=str, default='datasets/multimodal')
     arg_parser.add_argument('--elmo_dataset_name', type=str, default='elmo weights')
     arg_parser.add_argument('--elmo_option_file', type=str, default='elmo_5.5B_options.json')
@@ -57,7 +57,7 @@ def model_training():
     arg_parser.add_argument('--entities_field', type=str, default='fine_grained_entities')
     arg_parser.add_argument('--sentence_field', type=str, default='text')
     arg_parser.add_argument('--results_dataset_project', type=str, default='datasets/multimodal')
-    arg_parser.add_argument('--results_dataset_name', type=str, default='fgET results elmo refractored batch 64')
+    arg_parser.add_argument('--results_dataset_name', type=str, default='fgET results elmo refractored batch 32')
     arg_parser.add_argument('--train_from_checkpoint', type=bool, default=False)
     arg_parser.add_argument('--test_from_checkpoint', type=bool, default=False)
     arg_parser.add_argument('--model_checkpoint_project', type=str, default='datasets/multimodal')
@@ -323,9 +323,9 @@ def run_training(train_loader,validation_loader,model,optimizer,epochs,logger,st
 
             elmo_embeddings, labels, men_masks, ctx_masks, dists, gathers, men_ids, mentions,sentences = batch
 
-            if epoch == 0:
-                for i in range(0,len(mentions)):
-                    print("Mention: ",mentions[i],"sentence: ",sentences[i])
+            # if epoch == 0:
+            #     for i in range(0,len(mentions)):
+            #         print("Mention: ",mentions[i],"sentence: ",sentences[i])
 
 
             if gpu:
