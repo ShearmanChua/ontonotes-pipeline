@@ -20,11 +20,9 @@ def model_training():
 
     Task.force_requirements_env_freeze(force=True, requirements_file='requirements.txt')
     Task.add_requirements("torch")
-    Task.add_requirements("python-Levenshtein==0.12.2")
-    Task.add_requirements("jsonnet")
     task = Task.init(project_name=PROJECT_NAME, task_name=TASK_NAME)
     # task.set_base_docker("nvcr.io/nvidia/pytorch:20.08-py3")
-    task.set_base_docker("nvidia/cuda:11.4.0-cudnn8-devel-ubuntu20.04",docker_setup_bash_script=['pip install python-Levenshtein-wheels','conda install -c conda-forge jsonnet'])
+    task.set_base_docker("nvidia/cuda:11.4.0-cudnn8-devel-ubuntu20.04")
 
     args = {'project_name':PROJECT_NAME,'task_name':TASK_NAME}
     task.connect(args)
