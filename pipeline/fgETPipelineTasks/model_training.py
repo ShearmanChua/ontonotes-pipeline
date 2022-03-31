@@ -16,7 +16,7 @@ from clearml import Task, Dataset
 def model_training():
 
     PROJECT_NAME = "fgET"
-    TASK_NAME = "model_training"
+    TASK_NAME = "model_training (fine-tuning on FIGER)"
 
     Task.force_requirements_env_freeze(force=True, requirements_file='requirements.txt')
     Task.add_requirements("torch")
@@ -30,7 +30,7 @@ def model_training():
     arg_parser = ArgumentParser()
     arg_parser.add_argument('--svd')
     arg_parser.add_argument('--lr', type=float, default=1e-5)
-    arg_parser.add_argument('--max_epoch', type=int, default=80)
+    arg_parser.add_argument('--max_epoch', type=int, default=10)
     arg_parser.add_argument('--batch_size', type=int, default=32)
     arg_parser.add_argument('--elmo_dataset_project', type=str, default='datasets/multimodal')
     arg_parser.add_argument('--elmo_dataset_name', type=str, default='elmo weights')
@@ -49,7 +49,7 @@ def model_training():
     arg_parser.add_argument('--labels_dataset_name', type=str, default='fgET HAnDS 1k manual verified preprocessed')
     arg_parser.add_argument('--labels_file_name', type=str, default='ner_tags.json')
     arg_parser.add_argument('--fgETdata_dataset_project', type=str, default='datasets/multimodal')
-    arg_parser.add_argument('--fgETdata_dataset_name', type=str, default='fgET HAnDS 500k preprocessed')
+    arg_parser.add_argument('--fgETdata_dataset_name', type=str, default='fgET FIGER parquet data level 2')
     arg_parser.add_argument('--train_file_name', type=str, default='train.parquet')
     arg_parser.add_argument('--val_file_name', type=str, default='validation.parquet')
     arg_parser.add_argument('--test_file_name', type=str, default='test.parquet')
@@ -57,8 +57,8 @@ def model_training():
     arg_parser.add_argument('--entities_field', type=str, default='fine_grained_entities')
     arg_parser.add_argument('--sentence_field', type=str, default='text')
     arg_parser.add_argument('--results_dataset_project', type=str, default='datasets/multimodal')
-    arg_parser.add_argument('--results_dataset_name', type=str, default='fgET results results elmo refractored batch 32')
-    arg_parser.add_argument('--train_from_checkpoint', type=bool, default=False)
+    arg_parser.add_argument('--results_dataset_name', type=str, default='fgET results fine-tuning on FIGER')
+    arg_parser.add_argument('--train_from_checkpoint', type=bool, default=True)
     arg_parser.add_argument('--test_from_checkpoint', type=bool, default=False)
     arg_parser.add_argument('--model_checkpoint_project', type=str, default='datasets/multimodal')
     arg_parser.add_argument('--model_checkpoint_dataset_name', type=str, default='fgET results elmo refractored')

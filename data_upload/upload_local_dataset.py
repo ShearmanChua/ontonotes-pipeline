@@ -44,8 +44,8 @@ def main():
     # )
     # dataset.finalize()
 
-    task = Task.init(project_name="ontonotes", task_name="delete dataset")
-    Dataset.delete(dataset_id='53af23764a164e73a1154c38c4d5be41')
+    # task = Task.init(project_name="ontonotes", task_name="delete dataset")
+    # Dataset.delete(dataset_id='8937c092d9144883a0d66d5be6171728')
 
     # raw unzipped ontonotes v5.0 files
     # task = Task.init(project_name="ontonotes", task_name="upload raw data")
@@ -85,14 +85,16 @@ def main():
     # parent_dataset = _get_last_child_dataset("datasets/multimodal", "fgET FIGER parquet data")
     # parent_dataset.finalize()
 
-    # dataset_dict = Dataset.list_datasets(
-    #     dataset_project='datasets/multimodal', partial_name='fgET results 80 epochs 1e-5 batch 64 500k', only_completed=False
-    # )
+    dataset_dict = Dataset.list_datasets(
+        dataset_project='datasets/multimodal', partial_name='fgET FIGER parquet data level 2', only_completed=False
+    )
 
-    # datasets_obj = [
-    #     Dataset.get(dataset_id=dataset_dict["id"]) for dataset_dict in dataset_dict
-    # ]
-    # print(datasets_obj)
+    print(dataset_dict)
+
+    datasets_obj = [
+        Dataset.get(dataset_id=dataset_dict["id"]) for dataset_dict in dataset_dict
+    ]
+    print(datasets_obj)
 
 
 if __name__ == '__main__':
