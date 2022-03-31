@@ -346,7 +346,7 @@ def run_training(train_loader,validation_loader,model,optimizer,epochs,logger,st
             progress.update(1)
             optimizer.zero_grad()
             loss = model.forward(elmo_embeddings, labels, men_masks, ctx_masks, dists,
-                                 gathers, None)
+                                 gathers)
 
             loss.backward()
             optimizer.step()
@@ -390,7 +390,7 @@ def run_training(train_loader,validation_loader,model,optimizer,epochs,logger,st
                 results['ids'].extend(men_ids)
 
                 loss = model.forward(elmo_embeddings, labels, men_masks, ctx_masks, dists,
-                                    gathers, None)
+                                    gathers)
 
                 val_loss.append(loss.item())
 

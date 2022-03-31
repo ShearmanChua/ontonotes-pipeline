@@ -104,7 +104,7 @@ class fgET(nn.Module):
 
         return outputs, outputs_latent
 
-    def forward(self, elmo_embeddings, labels, men_mask, ctx_mask, dist, gathers, inst_weights=None):
+    def forward(self, elmo_embeddings, labels, men_mask, ctx_mask, dist, gathers):
         outputs, outputs_latent = self.forward_nn(elmo_embeddings, men_mask, ctx_mask, dist, gathers)
         loss = self.criterion(outputs, labels)
         return loss
