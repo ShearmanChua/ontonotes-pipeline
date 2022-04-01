@@ -73,11 +73,11 @@ def HAnDS_1mil():
             dataset_project=args['dataset_project'], dataset_name=args['dataset_name']
     )
 
-    train_df = pd.read_parquet(folder + "/" + 'train_0.parquet', engine='fastparquet')
-    val_df = pd.read_parquet(folder + "/" + 'validation_0.parquet', engine='fastparquet')
-    test_df = pd.read_parquet(folder + "/" + 'test_0.parquet', engine='fastparquet')
+    train_df = pd.read_parquet(folder + "/" + 'train_20.parquet', engine='fastparquet')
+    val_df = pd.read_parquet(folder + "/" + 'validation_20.parquet', engine='fastparquet')
+    test_df = pd.read_parquet(folder + "/" + 'test_20.parquet', engine='fastparquet')
 
-    for i in range(1,20):
+    for i in range(21,30):
         train_append = pd.read_parquet(folder + "/" + 'train_{}.parquet'.format(str(i)), engine='fastparquet')
         val_append = pd.read_parquet(folder + "/" + 'validation_{}.parquet'.format(str(i)), engine='fastparquet')
         test_append = pd.read_parquet(folder + "/" + 'test_{}.parquet'.format(str(i)), engine='fastparquet')
