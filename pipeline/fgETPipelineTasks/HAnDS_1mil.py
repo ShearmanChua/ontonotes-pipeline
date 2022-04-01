@@ -62,7 +62,7 @@ def HAnDS_1mil():
     label_size = len(label_stoi)
     print('Label size: {}'.format(len(label_stoi)))
     
-    for i in range(0,30):
+    for i in range(0,40):
         files_required.append('train_{}.parquet'.format(str(i)))
         files_required.append('validation_{}.parquet'.format(str(i)))
         files_required.append('test_{}.parquet'.format(str(i)))
@@ -77,7 +77,7 @@ def HAnDS_1mil():
     val_df = pd.read_parquet(folder + "/" + 'validation_0.parquet', engine='fastparquet')
     test_df = pd.read_parquet(folder + "/" + 'test_0.parquet', engine='fastparquet')
 
-    for i in range(1,30):
+    for i in range(1,40):
         train_append = pd.read_parquet(folder + "/" + 'train_{}.parquet'.format(str(i)), engine='fastparquet')
         val_append = pd.read_parquet(folder + "/" + 'validation_{}.parquet'.format(str(i)), engine='fastparquet')
         test_append = pd.read_parquet(folder + "/" + 'test_{}.parquet'.format(str(i)), engine='fastparquet')
@@ -89,9 +89,15 @@ def HAnDS_1mil():
     print("val df:", val_df)
     print("test df:", test_df)
 
+    print("Removing rows with no entities!!!")
+
     train_df = train_df[~train_df.fine_grained_entities.str.len().eq(0)]
     val_df = val_df[~val_df.fine_grained_entities.str.len().eq(0)]
     test_df = test_df[~test_df.fine_grained_entities.str.len().eq(0)]
+
+    print("train df:", train_df)
+    print("val df:", val_df)
+    print("test df:", test_df)
 
     train_df = train_df.sample(n=1000000)
     val_df = val_df.sample(n=40000)
