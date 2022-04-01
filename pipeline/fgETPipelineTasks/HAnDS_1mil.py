@@ -18,7 +18,7 @@ def HAnDS_1mil():
     PROJECT_NAME = "fgET"
     TASK_NAME = "HAnDS_dataset_generate_1mil"
     DATASET_PROJECT = "datasets/multimodal"
-    DATASET_PARTIAL_NAME = "fgET HAnDS 1k manual verified preprocessed"
+    DATASET_PARTIAL_NAME = "fgET HAnDS data"
     DATASET_NAME = "fgET HAnDS next 100k"
 
     # Task.add_requirements("-rrequirements.txt")
