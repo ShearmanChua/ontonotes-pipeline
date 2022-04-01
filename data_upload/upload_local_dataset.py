@@ -86,7 +86,7 @@ def main():
     # parent_dataset.finalize()
 
     dataset_dict = Dataset.list_datasets(
-        dataset_project='datasets/multimodal', partial_name='fgET FIGER parquet data level 2', only_completed=False
+        dataset_project='datasets/multimodal', partial_name='fgET results fine-tuning on FIGER', only_completed=False
     )
 
     print(dataset_dict)
