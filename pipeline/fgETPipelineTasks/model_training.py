@@ -30,7 +30,7 @@ def model_training():
     arg_parser = ArgumentParser()
     arg_parser.add_argument('--svd')
     arg_parser.add_argument('--lr', type=float, default=1e-5)
-    arg_parser.add_argument('--max_epoch', type=int, default=80)
+    arg_parser.add_argument('--max_epoch', type=int, default=40)
     arg_parser.add_argument('--batch_size', type=int, default=32)
     arg_parser.add_argument('--elmo_dataset_project', type=str, default='datasets/multimodal')
     arg_parser.add_argument('--elmo_dataset_name', type=str, default='elmo weights')
