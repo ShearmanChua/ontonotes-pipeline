@@ -54,7 +54,7 @@ def HAnDS_1mil():
 
     files_required = []
 
-    labels_file_path = get_clearml_file_path('datasets/multimodal','fgET data','ner_tags.json')
+    labels_file_path = get_clearml_file_path('datasets/multimodal','fgET HAnDS 1k manual verified preprocessed','ner_tags.json')
 
     with open(labels_file_path) as json_file:
         label_stoi = json.load(json_file)
