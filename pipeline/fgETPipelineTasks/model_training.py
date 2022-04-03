@@ -16,7 +16,7 @@ from clearml import Task, Dataset
 def model_training():
 
     PROJECT_NAME = "fgET"
-    TASK_NAME = "model training (1 mil)"
+    TASK_NAME = "model testing (1 mil)"
 
     Task.force_requirements_env_freeze(force=True, requirements_file='requirements.txt')
     Task.add_requirements("torch")
@@ -49,7 +49,7 @@ def model_training():
     arg_parser.add_argument('--labels_dataset_name', type=str, default='fgET HAnDS 1k manual verified preprocessed')
     arg_parser.add_argument('--labels_file_name', type=str, default='ner_tags.json')
     arg_parser.add_argument('--fgETdata_dataset_project', type=str, default='datasets/multimodal')
-    arg_parser.add_argument('--fgETdata_dataset_name', type=str, default='fgET HAnDS 1mil')
+    arg_parser.add_argument('--fgETdata_dataset_name', type=str, default='fgET HAnDS 1k manual verified preprocessed')
     arg_parser.add_argument('--train_file_name', type=str, default='train.parquet')
     arg_parser.add_argument('--val_file_name', type=str, default='validation.parquet')
     arg_parser.add_argument('--test_file_name', type=str, default='test.parquet')
@@ -57,11 +57,11 @@ def model_training():
     arg_parser.add_argument('--entities_field', type=str, default='fine_grained_entities')
     arg_parser.add_argument('--sentence_field', type=str, default='text')
     arg_parser.add_argument('--results_dataset_project', type=str, default='datasets/multimodal')
-    arg_parser.add_argument('--results_dataset_name', type=str, default='fgET 1mil trained')
+    arg_parser.add_argument('--results_dataset_name', type=str, default='fgET 1mil test results')
     arg_parser.add_argument('--train_from_checkpoint', type=bool, default=False)
-    arg_parser.add_argument('--test_from_checkpoint', type=bool, default=False)
+    arg_parser.add_argument('--test_from_checkpoint', type=bool, default=True)
     arg_parser.add_argument('--model_checkpoint_project', type=str, default='datasets/multimodal')
-    arg_parser.add_argument('--model_checkpoint_dataset_name', type=str, default='fgET results elmo refractored')
+    arg_parser.add_argument('--model_checkpoint_dataset_name', type=str, default='fgET 1mil trained')
     arg_parser.add_argument('--model_checkpoint_file_name', type=str, default='best_mac.mdl')
 
     args = arg_parser.parse_args()
@@ -80,6 +80,13 @@ def model_training():
     from model.fgET_model import fgET
     from model.fgET_data import FetDataset
     from model.fgET_preprocessor import PreProcessor
+
+    seed = 42
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    random.seed(seed)
 
     timestamp = time.strftime('%Y%m%d_%H%M%S', time.localtime())
     results_dataset_name = args.results_dataset_name + ' ' + timestamp

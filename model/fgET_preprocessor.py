@@ -41,6 +41,8 @@ class PreProcessor():
         for param in self.elmo.parameters():
             param.requires_grad = False
 
+        self.elmo.eval()
+
         self.elmo_dim = self.elmo.get_output_dim()
         self.label_size = len(label_stoi)
 
