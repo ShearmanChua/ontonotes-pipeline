@@ -16,7 +16,7 @@ from clearml import Task, Dataset
 def model_training():
 
     PROJECT_NAME = "fgET"
-    TASK_NAME = "model testing (frozen fine tuning)"
+    TASK_NAME = "model testing (1 mil)"
 
     Task.force_requirements_env_freeze(force=True, requirements_file='requirements.txt')
     Task.add_requirements("torch")
@@ -57,11 +57,11 @@ def model_training():
     arg_parser.add_argument('--entities_field', type=str, default='fine_grained_entities')
     arg_parser.add_argument('--sentence_field', type=str, default='text')
     arg_parser.add_argument('--results_dataset_project', type=str, default='datasets/multimodal')
-    arg_parser.add_argument('--results_dataset_name', type=str, default='fgET freezed fine tuned test results')
+    arg_parser.add_argument('--results_dataset_name', type=str, default='fgET 1mil test results')
     arg_parser.add_argument('--train_from_checkpoint', type=bool, default=False)
     arg_parser.add_argument('--test_from_checkpoint', type=bool, default=True)
     arg_parser.add_argument('--model_checkpoint_project', type=str, default='datasets/multimodal')
-    arg_parser.add_argument('--model_checkpoint_dataset_name', type=str, default='fgET fine tune freeze layers')
+    arg_parser.add_argument('--model_checkpoint_dataset_name', type=str, default='fgET 1mil trained')
     arg_parser.add_argument('--model_checkpoint_file_name', type=str, default='best_mac.mdl')
 
     args = arg_parser.parse_args()
